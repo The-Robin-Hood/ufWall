@@ -73,7 +73,6 @@ func NewStyles() Styles {
 		Title: lipgloss.NewStyle().
 			Bold(true).
 			Foreground(mauve).
-			MarginBottom(1).
 			Align(lipgloss.Center),
 
 		Subtitle: lipgloss.NewStyle().
@@ -95,15 +94,13 @@ func NewStyles() Styles {
 
 		SectionBorder: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(mauve).
-			Padding(1, 2).
-			MarginBottom(1).Width(30),
+			BorderForeground(mauve),
+
 
 		SectionTitle: lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lavender).
-			Underline(true).
-			MarginBottom(1),
+			Underline(true),
 
 		AllowPolicy: lipgloss.NewStyle().
 			Bold(true).
@@ -127,8 +124,7 @@ func NewStyles() Styles {
 
 		Footer: lipgloss.NewStyle().
 			Foreground(overlay1).
-			MarginTop(2).
-			Padding(1).
+			PaddingBottom(1).
 			Align(lipgloss.Center),
 
 		FooterKey: lipgloss.NewStyle().

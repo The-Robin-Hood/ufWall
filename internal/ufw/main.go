@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type UFWStatus struct {
@@ -19,6 +20,7 @@ type UFWStatus struct {
 	RawVerbose    string
 	RawNumbered   string
 	Error         error
+	UpTime        string
 }
 
 type Rule struct {
@@ -36,13 +38,17 @@ var (
 	reRuleLine = regexp.MustCompile(`^\s*\[\s*(\d+)\]\s+(.+)$`)
 )
 
-func RunSudo(args ...string) (stdout, stderr string, err error) {
-	cmd := exec.Command("sudo", append([]string{"ufw"}, args...)...)
+func RunCmd(name string, args ...string) (stdout, stderr string, err error) {
+	cmd := exec.Command(name, args...)
 	var out, errOut bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
 	err = cmd.Run()
 	return out.String(), errOut.String(), err
+}
+
+func RunSudo(args ...string) (stdout, stderr string, err error) {
+	return RunCmd("sudo", append([]string{"ufw"}, args...)...)
 }
 
 func GetStatus() UFWStatus {
@@ -103,6 +109,25 @@ func GetStatus() UFWStatus {
 			s.Rules = append(s.Rules, r)
 		}
 	}
+	out, _, _ := RunCmd("systemctl", "show", "ufw", "--property=ActiveEnterTimestamp")
+	line := strings.TrimSpace(out)
+	parts := strings.SplitN(line, "=", 2)
+	if len(parts) != 2 || parts[1] == "" {
+		s.Error = fmt.Errorf("could not parse timestamp")
+		return s
+	}
+	timestamp := parts[1]
+	startTime, err := time.Parse("Mon 2006-01-02 15:04:05 MST", timestamp)
+	if err != nil {
+		s.Error = err
+		return s
+	}
+
+	uptime := time.Since(startTime)
+	hours := int(uptime.Hours())
+	minutes := int(uptime.Minutes()) % 60
+	
+	s.UpTime = fmt.Sprintf("%dh %dm", hours, minutes)	
 	return s
 }
 

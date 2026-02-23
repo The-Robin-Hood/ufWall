@@ -2,51 +2,75 @@ package app
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
 func (m model) View() string {
-	var b strings.Builder
+	const minWidth, minHeight = 87, 30
+	const borderWidth, borderHeight = minWidth - 5, minHeight - 3
+	if m.width < minWidth || m.height < minHeight {
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			m.styles.Error.Render(fmt.Sprintf("Terminal too small!\nMinimum: %dx%d\nCurrent: %dx%d", minWidth, minHeight, m.width, m.height)),
+		)
+	}
 
-	// // If there's an error, show it prominently
 	if m.status.Error != nil {
-		errorBox := m.styles.Error.Render(fmt.Sprintf("%v", m.status.Error))
-		footer := m.renderFooter()
+		footer := m.renderFooter(borderWidth)
 		return lipgloss.JoinVertical(
 			lipgloss.Center,
 			"",
-			errorBox,
+			m.styles.Error.Render(fmt.Sprintf("%v", m.status.Error)),
 			"",
 			footer,
 		)
 	}
 
-	// Title
-	title := m.styles.Title.Width(m.width).Render("Firewall Manager")
+	borderStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		Height(borderHeight).
+		Width(borderWidth).
+		BorderForeground(lipgloss.Color("240"))
 
-	b.WriteString(title)
-	b.WriteString("\n\n")
+	title := m.styles.Title.
+		Width(borderWidth).
+		Render("Firewall Manager")
 
-	// Status Section
-	statusSection := m.renderStatusSection()
-	b.WriteString(statusSection)
-	b.WriteString("\n")
+	infoSection := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		m.renderStatusSection(),
+		m.renderPoliciesSection(),	
+		)
 
-	// Default Policies Section
-	policiesSection := m.renderPoliciesSection()
-	b.WriteString(policiesSection)
-	b.WriteString("\n")
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		infoSection,
+		"",
+		m.renderActiveRulesCountSection(),
+	)
 
-	// Rules Count Section
-	rulesSection := m.renderRulesSection()
-	b.WriteString(rulesSection)
-	b.WriteString("\n")
+	layout := lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		"",
+		content,
+		"",
+		m.renderFooter(borderWidth),
+	)
 
-	// Footer with keybindings
-	footer := m.renderFooter()
-	b.WriteString(footer)
+	box := borderStyle.Render(layout)
 
-	return b.String()
+	box = lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		box,
+	)
+
+	return box
 }

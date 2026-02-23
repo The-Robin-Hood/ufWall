@@ -31,17 +31,23 @@ func (m model) renderStatusSection() string {
 		m.styles.Value.Render(strings.ToUpper(m.status.Logging)),
 	)
 
+	uptimeLine := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		m.styles.Label.Render("UpTime:"),
+		m.styles.Value.Render(m.status.UpTime),
+	)
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		statusLine,
 		loggingLine,
+		uptimeLine,
 	)
 
-	return m.styles.SectionBorder.Render(content)
+	return RenderBoxWithTitle("Firewall Status", content, m.styles, -1)
 }
 
 func (m model) renderPoliciesSection() string {
-	title := m.styles.SectionTitle.Render("Default Policies")
 
 	incomingStyle := m.getPolicyStyle(m.status.DefaultIn)
 	outgoingStyle := m.getPolicyStyle(m.status.DefaultOut)
@@ -67,28 +73,53 @@ func (m model) renderPoliciesSection() string {
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
-		title,
 		incomingLine,
 		outgoingLine,
 		routedLine,
 	)
-
-	return m.styles.SectionBorder.Render(content)
+	return RenderBoxWithTitle("Default Policies", content, m.styles, -1)
 }
 
-func (m model) renderRulesSection() string {
-	title := m.styles.SectionTitle.Render("Active Rules")
+func (m model) renderActiveRulesCountSection() string {
 
 	ruleCountText := fmt.Sprintf("%d rule(s) configured", len(m.status.Rules))
 	ruleCountLine := m.styles.Value.Render(ruleCountText)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
-		title,
 		ruleCountLine,
 	)
 
-	return m.styles.SectionBorder.Render(content)
+	return RenderBoxWithTitle("Active Rules", content, m.styles,-1)
+}
+
+func (m model) renderAllRulesSection(width int) string {
+	title := m.styles.SectionTitle.Render("All Rules")
+	var rows []string
+
+	header := fmt.Sprintf(
+		"%-1s %-3s %-5s %-7s",
+		"NUM", "TO", "ACTION", "FROM",
+	)
+	rows = append(rows, m.styles.Label.Render(header))
+	// Rule rows
+	for i, r := range m.status.Rules {
+		if i > 1 {
+			continue
+		}
+		row := fmt.Sprintf(
+			"%-5d %-15s %-10s %-20s",
+			r.Num, r.To, r.Action, r.From,
+		)
+		rows = append(rows, m.styles.Value.Render(row))
+	}
+	table := strings.Join(rows, "\n")
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		table,
+	)
+	return m.styles.SectionBorder.Width(width).Render(content)
 }
 
 func (m model) getPolicyStyle(policy string) lipgloss.Style {
@@ -104,7 +135,7 @@ func (m model) getPolicyStyle(policy string) lipgloss.Style {
 	}
 }
 
-func (m model) renderFooter() string {
+func (m model) renderFooter(width int) string {
 	keys := []string{
 		m.styles.FooterKey.Render("r") + " refresh",
 		m.styles.FooterKey.Render("?") + " help",
@@ -112,5 +143,5 @@ func (m model) renderFooter() string {
 	}
 
 	footerText := strings.Join(keys, "  •  ")
-	return m.styles.Footer.Width(m.width).Render(footerText)
+	return m.styles.Footer.Width(width).Render(footerText)
 }
