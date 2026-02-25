@@ -8,6 +8,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	SectionStatus = iota
+	SectionPolicies
+	SectionRules
+
+// SectionDetails
+)
+
 func (m model) renderStatusSection() string {
 	var statusText string
 	var statusStyle lipgloss.Style
@@ -45,7 +53,7 @@ func (m model) renderStatusSection() string {
 		totalRulesLine,
 	)
 
-	return RenderBoxWithTitle("Firewall Stats", content, m.styles, -1)
+	return RenderBoxWithTitle("Firewall Stats", content, m.styles, -1, m.activeSection == SectionStatus)
 }
 
 func (m model) renderPoliciesSection() string {
@@ -78,15 +86,15 @@ func (m model) renderPoliciesSection() string {
 		outgoingLine,
 		routedLine,
 	)
-	return RenderBoxWithTitle("Default Policies", content, m.styles, -1)
+	return RenderBoxWithTitle("Default Policies", content, m.styles, -1, m.activeSection == SectionPolicies)
 }
 
 func (m model) renderRulesSection() string {
 	var rows []string
 
 	header := fmt.Sprintf(
-	"%-3s │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
-		"#", "Action", "Proto", "Source", "sPort","Destination","dPort")
+		"%-3s │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
+		"#", "Action", "Proto", "Source", "sPort", "Destination", "dPort")
 
 	headerContent := m.styles.Label.UnsetWidth().Render(header)
 	line := strings.Repeat("─", lipgloss.Width(headerContent))
@@ -110,7 +118,7 @@ func (m model) renderRulesSection() string {
 		lipgloss.Left,
 		table,
 	)
-	return RenderBoxWithTitle("Active Rules", content, m.styles, -1)
+	return RenderBoxWithTitle("Active Rules", content, m.styles, -1, m.activeSection == SectionRules)
 }
 
 func (m model) getPolicyStyle(policy string) lipgloss.Style {
@@ -127,12 +135,16 @@ func (m model) getPolicyStyle(policy string) lipgloss.Style {
 }
 
 func (m model) renderFooter(width int) string {
-	keys := []string{
-		m.styles.FooterKey.Render("r") + " refresh",
-		m.styles.FooterKey.Render("?") + " help",
-		m.styles.FooterKey.Render("q") + " quit",
+	var keys []string
+
+	switch m.activeSection {
+	case SectionRules:
+		keys = []string{"↑↓: navigate", "enter: details", "d: delete"}
+	default:
+		keys = []string{"tab: next section", "r: refresh"}
 	}
 
+	keys = append(keys, "q: quit")
 	footerText := strings.Join(keys, "  •  ")
 	return m.styles.Footer.Width(width).Render(footerText)
 }

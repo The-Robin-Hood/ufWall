@@ -16,8 +16,9 @@ type Styles struct {
 	StatusLabel    lipgloss.Style
 
 	// Sections
-	SectionBorder lipgloss.Style
-	SectionTitle  lipgloss.Style
+	SectionBorder       lipgloss.Style
+	SectionTitle        lipgloss.Style
+	SectionBorderActive lipgloss.Style
 
 	// Policies
 	AllowPolicy  lipgloss.Style
@@ -61,7 +62,7 @@ func NewStyles() Styles {
 		overlay2 = lipgloss.Color("#9399b2")
 		overlay1 = lipgloss.Color("#7f849c")
 		// overlay0  = lipgloss.Color("#6c7086")
-		// surface2  = lipgloss.Color("#585b70")
+		surface2  = lipgloss.Color("#585b70")
 		// surface1  = lipgloss.Color("#45475a")
 		// surface0  = lipgloss.Color("#313244")
 		// base      = lipgloss.Color("#1e1e2e")
@@ -94,8 +95,11 @@ func NewStyles() Styles {
 
 		SectionBorder: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(mauve),
+			BorderForeground(surface2),
 
+		SectionBorderActive: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(mauve),
 
 		SectionTitle: lipgloss.NewStyle().
 			Bold(true).

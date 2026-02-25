@@ -6,8 +6,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func RenderBoxWithTitle(title, content string, styles Styles, width int) string {
+func RenderBoxWithTitle(title, content string, styles Styles, width int, activeSession bool) string {
+	
 	borderColor := styles.SectionBorder.GetBorderTopForeground()
+	if activeSession{
+		borderColor = styles.SectionBorderActive.GetBorderTopForeground()
+		title  = title + " ●"
+	}
 
 	boxWidth := 0
 	if width != -1 {
@@ -16,7 +21,7 @@ func RenderBoxWithTitle(title, content string, styles Styles, width int) string 
 
 	style := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(styles.SectionBorder.GetBorderTopForeground()).
+		BorderForeground(borderColor).
 		Padding(1, 2)
 
 	if boxWidth > 0 {
