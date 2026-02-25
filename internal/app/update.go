@@ -18,7 +18,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, Keys.Refresh):
-			m.status = ufw.GetStatus()
+			m.status,m.rules = ufw.GetStatus()
 			return m, nil
 		}
 

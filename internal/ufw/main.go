@@ -1,13 +1,11 @@
 package ufw
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"os/exec"
 	"regexp"
 	"strings"
-	"time"
 )
 
 type UFWStatus struct {
@@ -16,19 +14,10 @@ type UFWStatus struct {
 	DefaultOut    string
 	DefaultRouted string
 	Logging       string
-	Rules         []Rule
 	RawVerbose    string
 	RawNumbered   string
 	Error         error
 	UpTime        string
-}
-
-type Rule struct {
-	Num    int
-	To     string
-	Action string
-	From   string
-	Raw    string
 }
 
 var (
@@ -51,16 +40,24 @@ func RunSudo(args ...string) (stdout, stderr string, err error) {
 	return RunCmd("sudo", append([]string{"ufw"}, args...)...)
 }
 
-func GetStatus() UFWStatus {
+func extractPolicy(s string) string {
+	parts := strings.Fields(s)
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return "unknown"
+}
+
+func GetStatus() (UFWStatus, []Rule) {
 	var s UFWStatus
-	// Prefer numbered for rule list; use verbose for defaults/logging.
+
 	numOut, _, errNum := RunSudo("status", "numbered")
 	verbOut, _, errVerb := RunSudo("status", "verbose")
 	s.RawNumbered = numOut
 	s.RawVerbose = verbOut
 	if errNum != nil && errVerb != nil {
 		s.Error = fmt.Errorf("ufw status: %w", errNum)
-		return s
+		return s, nil
 	}
 
 	if m := reStatus.FindStringSubmatch(numOut); len(m) > 1 {
@@ -76,67 +73,21 @@ func GetStatus() UFWStatus {
 			p = strings.TrimSpace(p)
 			lower := strings.ToLower(p)
 			if strings.Contains(lower, "incoming") {
-				s.DefaultIn = strings.TrimSuffix(p, "(incoming)")
+				s.DefaultIn = strings.ToUpper(extractPolicy(p))
 			}
 			if strings.Contains(lower, "outgoing") {
-				s.DefaultOut = strings.TrimSuffix(p, "(outgoing)")
+				s.DefaultOut = strings.ToUpper(extractPolicy(p))
 			}
 			if strings.Contains(lower, "routed") {
-				s.DefaultRouted = strings.TrimSuffix(p, "(routed)")
+				s.DefaultRouted = strings.ToUpper(extractPolicy(p))
 			}
 		}
 	}
 	if m := reLogging.FindStringSubmatch(verbOut); len(m) > 1 {
 		s.Logging = m[1]
 	}
-
-	sc := bufio.NewScanner(strings.NewReader(numOut))
-	for sc.Scan() {
-		line := sc.Text()
-		if subm := reRuleLine.FindStringSubmatch(line); len(subm) >= 3 {
-			var num int
-			fmt.Sscanf(subm[1], "%d", &num)
-			rest := strings.TrimSpace(subm[2])
-			fields := splitRuleFields(rest)
-			r := Rule{Num: num, Raw: rest}
-			if len(fields) >= 3 {
-				r.To = fields[0]
-				r.Action = fields[1]
-				r.From = strings.Join(fields[2:], " ")
-			} else {
-				r.To = rest
-			}
-			s.Rules = append(s.Rules, r)
-		}
-	}
-	out, _, _ := RunCmd("systemctl", "show", "ufw", "--property=ActiveEnterTimestamp")
-	line := strings.TrimSpace(out)
-	parts := strings.SplitN(line, "=", 2)
-	if len(parts) != 2 || parts[1] == "" {
-		s.Error = fmt.Errorf("could not parse timestamp")
-		return s
-	}
-	timestamp := parts[1]
-	startTime, err := time.Parse("Mon 2006-01-02 15:04:05 MST", timestamp)
-	if err != nil {
-		s.Error = err
-		return s
-	}
-
-	uptime := time.Since(startTime)
-	hours := int(uptime.Hours())
-	minutes := int(uptime.Minutes()) % 60
-	
-	s.UpTime = fmt.Sprintf("%dh %dm", hours, minutes)	
-	return s
-}
-
-func splitRuleFields(s string) []string {
-	var out []string
-	for f := range strings.FieldsSeq(s) {
-		out = append(out, f)
-	}
-	return out
+	rules := ParseRules(numOut)
+	return s, rules
 }
 
 func Enable() (stdout, stderr string, err error) {
@@ -167,7 +118,6 @@ func DefaultOutgoing(allow bool) (stdout, stderr string, err error) {
 	return RunSudo("default", pol, "outgoing")
 }
 
-// AddRule runs e.g. "sudo ufw allow 22/tcp".
 func AddRule(rule string) (stdout, stderr string, err error) {
 	parts := strings.Fields(rule)
 	if len(parts) == 0 {

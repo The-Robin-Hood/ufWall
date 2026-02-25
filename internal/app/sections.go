@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -31,20 +32,20 @@ func (m model) renderStatusSection() string {
 		m.styles.Value.Render(strings.ToUpper(m.status.Logging)),
 	)
 
-	uptimeLine := lipgloss.JoinHorizontal(
+	totalRulesLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("UpTime:"),
-		m.styles.Value.Render(m.status.UpTime),
+		m.styles.Label.Render("Total Rules:"),
+		m.styles.Value.Render(strconv.Itoa(len(m.rules))),
 	)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		statusLine,
 		loggingLine,
-		uptimeLine,
+		totalRulesLine,
 	)
 
-	return RenderBoxWithTitle("Firewall Status", content, m.styles, -1)
+	return RenderBoxWithTitle("Firewall Stats", content, m.styles, -1)
 }
 
 func (m model) renderPoliciesSection() string {
@@ -80,46 +81,36 @@ func (m model) renderPoliciesSection() string {
 	return RenderBoxWithTitle("Default Policies", content, m.styles, -1)
 }
 
-func (m model) renderActiveRulesCountSection() string {
-
-	ruleCountText := fmt.Sprintf("%d rule(s) configured", len(m.status.Rules))
-	ruleCountLine := m.styles.Value.Render(ruleCountText)
-
-	content := lipgloss.JoinVertical(
-		lipgloss.Left,
-		ruleCountLine,
-	)
-
-	return RenderBoxWithTitle("Active Rules", content, m.styles,-1)
-}
-
-func (m model) renderAllRulesSection(width int) string {
-	title := m.styles.SectionTitle.Render("All Rules")
+func (m model) renderRulesSection() string {
 	var rows []string
 
 	header := fmt.Sprintf(
-		"%-1s %-3s %-5s %-7s",
-		"NUM", "TO", "ACTION", "FROM",
-	)
-	rows = append(rows, m.styles.Label.Render(header))
-	// Rule rows
-	for i, r := range m.status.Rules {
-		if i > 1 {
-			continue
-		}
+	"%-3s │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
+		"#", "Action", "Proto", "Source", "sPort","Destination","dPort")
+
+	headerContent := m.styles.Label.UnsetWidth().Render(header)
+	line := strings.Repeat("─", lipgloss.Width(headerContent))
+	rows = append(rows, headerContent, m.styles.Label.UnsetWidth().Render(line))
+
+	for _, r := range m.rules {
 		row := fmt.Sprintf(
-			"%-5d %-15s %-10s %-20s",
-			r.Num, r.To, r.Action, r.From,
+			"%-3d │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
+			r.Num,
+			r.Action,
+			r.ToProtocol,
+			r.FromSource,
+			r.FromPort,
+			r.ToDest,
+			r.ToPort,
 		)
 		rows = append(rows, m.styles.Value.Render(row))
 	}
 	table := strings.Join(rows, "\n")
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
-		title,
 		table,
 	)
-	return m.styles.SectionBorder.Width(width).Render(content)
+	return RenderBoxWithTitle("Active Rules", content, m.styles, -1)
 }
 
 func (m model) getPolicyStyle(policy string) lipgloss.Style {

@@ -8,7 +8,7 @@ import (
 
 func (m model) View() string {
 	const minWidth, minHeight = 87, 30
-	const borderWidth, borderHeight = minWidth - 5, minHeight - 3
+	const containerWidth, containerHeight = minWidth - 5, minHeight - 3
 	if m.width < minWidth || m.height < minHeight {
 		return lipgloss.Place(
 			m.width,
@@ -20,7 +20,7 @@ func (m model) View() string {
 	}
 
 	if m.status.Error != nil {
-		footer := m.renderFooter(borderWidth)
+		footer := m.renderFooter(containerWidth)
 		return lipgloss.JoinVertical(
 			lipgloss.Center,
 			"",
@@ -30,27 +30,20 @@ func (m model) View() string {
 		)
 	}
 
-	borderStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		Height(borderHeight).
-		Width(borderWidth).
-		BorderForeground(lipgloss.Color("240"))
-
 	title := m.styles.Title.
-		Width(borderWidth).
+		Width(containerWidth).
 		Render("Firewall Manager")
 
 	infoSection := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		m.renderStatusSection(),
-		m.renderPoliciesSection(),	
-		)
+		m.renderPoliciesSection(),
+	)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		infoSection,
-		"",
-		m.renderActiveRulesCountSection(),
+		m.renderRulesSection(),
 	)
 
 	layout := lipgloss.JoinVertical(
@@ -59,18 +52,16 @@ func (m model) View() string {
 		"",
 		content,
 		"",
-		m.renderFooter(borderWidth),
+		m.renderFooter(containerWidth),
 	)
 
-	box := borderStyle.Render(layout)
-
-	box = lipgloss.Place(
+	layout = lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
 		lipgloss.Center,
-		box,
+		layout,
 	)
 
-	return box
+	return layout
 }
