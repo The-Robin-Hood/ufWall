@@ -7,19 +7,6 @@ import (
 	"strings"
 )
 
-type Rule struct {
-	Num        int
-	Action     string
-	Direction  string
-	ToDest     string
-	ToPort     string
-	ToProtocol string
-	FromSource string
-	FromPort   string
-	Comment    string
-	Raw        string
-}
-
 func ParseRules(output string) []Rule {
 	var rules []Rule
 	reNumbered := regexp.MustCompile(`^\[\s*(\d+)\]\s+(.+)$`)
@@ -95,9 +82,6 @@ func parseRuleLine(num int, line string) Rule {
 	actionParts := strings.Fields(parts[actionIndex])
 	if len(actionParts) > 0 {
 		rule.Action = actionParts[0]
-	}
-	if len(actionParts) > 1 {
-		rule.Direction = actionParts[1]
 	}
 
 	if actionIndex > 0 {

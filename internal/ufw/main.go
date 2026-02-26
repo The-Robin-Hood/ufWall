@@ -8,16 +8,38 @@ import (
 	"strings"
 )
 
-type UFWStatus struct {
-	Active        bool
-	DefaultIn     string
-	DefaultOut    string
-	DefaultRouted string
-	Logging       string
-	RawVerbose    string
-	RawNumbered   string
-	Error         error
-	UpTime        string
+type Stats struct {
+	Active  bool
+	Logging string
+	TotalRules int
+}
+
+type Policy struct {
+	DefaultIncoming string
+	DefaultOutgoing string
+	DefaultRouted   string
+}
+
+type Rule struct {
+	Num    int
+	Action string
+
+	ToDest     string
+	ToPort     string
+	ToProtocol string
+
+	FromSource string
+	FromPort   string
+
+	Comment string
+	Raw     string
+}
+
+type ufwData struct {
+	Stats  Stats
+	Policy Policy
+	Rules  []Rule
+	Error  error
 }
 
 var (
@@ -48,23 +70,19 @@ func extractPolicy(s string) string {
 	return "unknown"
 }
 
-func GetStatus() (UFWStatus, []Rule) {
-	var s UFWStatus
+func GetUFWData() (ufwData) {
+	var data ufwData
 
 	numOut, _, errNum := RunSudo("status", "numbered")
 	verbOut, _, errVerb := RunSudo("status", "verbose")
-	s.RawNumbered = numOut
-	s.RawVerbose = verbOut
+	
 	if errNum != nil && errVerb != nil {
-		s.Error = fmt.Errorf("ufw status: %w", errNum)
-		return s, nil
+		data.Error = fmt.Errorf("ufw status: %w", errNum)
+		return data
 	}
 
-	if m := reStatus.FindStringSubmatch(numOut); len(m) > 1 {
-		s.Active = strings.EqualFold(m[1], "active")
-	}
 	if m := reStatus.FindStringSubmatch(verbOut); len(m) > 1 {
-		s.Active = strings.EqualFold(m[1], "active")
+		data.Stats.Active = strings.EqualFold(m[1], "active")
 	}
 
 	if m := reDefault.FindStringSubmatch(verbOut); len(m) > 1 {
@@ -73,21 +91,24 @@ func GetStatus() (UFWStatus, []Rule) {
 			p = strings.TrimSpace(p)
 			lower := strings.ToLower(p)
 			if strings.Contains(lower, "incoming") {
-				s.DefaultIn = strings.ToUpper(extractPolicy(p))
+				data.Policy.DefaultIncoming = strings.ToUpper(extractPolicy(p))
 			}
 			if strings.Contains(lower, "outgoing") {
-				s.DefaultOut = strings.ToUpper(extractPolicy(p))
+				data.Policy.DefaultOutgoing = strings.ToUpper(extractPolicy(p))
 			}
 			if strings.Contains(lower, "routed") {
-				s.DefaultRouted = strings.ToUpper(extractPolicy(p))
+				data.Policy.DefaultRouted = strings.ToUpper(extractPolicy(p))
 			}
 		}
 	}
 	if m := reLogging.FindStringSubmatch(verbOut); len(m) > 1 {
-		s.Logging = m[1]
+		data.Stats.Logging = m[1]
 	}
-	rules := ParseRules(numOut)
-	return s, rules
+
+	data.Rules = ParseRules(numOut)
+	data.Stats.TotalRules = len(data.Rules)
+
+	return data
 }
 
 func Enable() (stdout, stderr string, err error) {

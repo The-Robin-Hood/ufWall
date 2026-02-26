@@ -1,0 +1,21 @@
+package ui
+
+import (
+	"strings"
+	"ufWall/internal/sections"
+)
+
+func Footer(styles Styles, activeSection int, width int) string {
+	var keys []string
+
+	switch activeSection {
+	case sections.RulesSection:
+		keys = []string{"↑↓: navigate", "enter: details", "d: delete"}
+	default:
+		keys = []string{"tab: next section", "r: refresh"}
+	}
+
+	keys = append(keys, "q: quit")
+	footerText := strings.Join(keys, "  •  ")
+	return styles.Footer.Width(width).Render(footerText)
+}

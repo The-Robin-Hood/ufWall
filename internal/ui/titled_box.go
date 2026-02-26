@@ -1,4 +1,4 @@
-package app
+package ui
 
 import (
 	"strings"
@@ -6,12 +6,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func RenderBoxWithTitle(title, content string, styles Styles, width int, activeSession bool) string {
-	
+func TitledBox(title, content string, styles Styles, width int, activeSession bool) string {
+
 	borderColor := styles.SectionBorder.GetBorderTopForeground()
-	if activeSession{
+	if activeSession {
 		borderColor = styles.SectionBorderActive.GetBorderTopForeground()
-		title  = title + " ●"
+		title = title + " ●"
 	}
 
 	boxWidth := 0

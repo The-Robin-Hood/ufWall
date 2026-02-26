@@ -1,26 +1,44 @@
 package app
 
-import "ufWall/internal/ufw"
+import (
+	"ufWall/internal/sections/policy"
+	"ufWall/internal/sections/rules"
+	"ufWall/internal/sections/stats"
+	"ufWall/internal/ufw"
+	"ufWall/internal/ui"
+)
 
 type model struct {
-	status ufw.UFWStatus
-	rules  []ufw.Rule
+	stats ufw.Stats
+	policy ufw.Policy
+	rules []ufw.Rule
+  err error 
 
 	activeSection int
-	selectedRule int
 
-	styles Styles
 	width  int
 	height int
+	styles ui.Styles
+
+	statsSection stats.Model	
+	policySection policy.Model
+	rulesSection  rules.Model
 }
 
 func InitialModel() model {
-	s,r := ufw.GetStatus()
+	data := ufw.GetUFWData()
+	styles := ui.NewStyles()
 	return model{
-		status: s,
-		rules: r,
-		styles: NewStyles(),
-		width:   87,
-		height: 30,	
+		stats:  data.Stats,
+		rules:  data.Rules,
+		policy: data.Policy,
+
+		styles: styles,
+		width:  87,
+		height: 30,
+
+		statsSection: stats.New(styles),
+		policySection: policy.New(styles),
+		rulesSection: rules.New(styles),
 	}
 }

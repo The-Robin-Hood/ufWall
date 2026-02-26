@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"ufWall/internal/sections"
+	"ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -19,12 +21,12 @@ func (m model) View() string {
 		)
 	}
 
-	if m.status.Error != nil {
-		footer := m.renderFooter(containerWidth)
+	if m.err != nil {
+		footer := ui.Footer(m.styles, m.activeSection, containerWidth)
 		return lipgloss.JoinVertical(
 			lipgloss.Center,
 			"",
-			m.styles.Error.Render(fmt.Sprintf("%v", m.status.Error)),
+			m.styles.Error.Render(fmt.Sprintf("%v", m.err)),
 			"",
 			footer,
 		)
@@ -36,14 +38,14 @@ func (m model) View() string {
 
 	infoSection := lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		m.renderStatusSection(),
-		m.renderPoliciesSection(),
+		m.statsSection.View(m.stats,m.activeSection == sections.StatsSection),
+		m.policySection.View(m.policy,m.activeSection == sections.PolicySection),
 	)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		infoSection,
-		m.renderRulesSection(),
+		m.rulesSection.View(m.rules,m.activeSection == sections.RulesSection),
 	)
 
 	layout := lipgloss.JoinVertical(
@@ -52,7 +54,7 @@ func (m model) View() string {
 		"",
 		content,
 		"",
-		m.renderFooter(containerWidth),
+		ui.Footer(m.styles, m.activeSection, containerWidth),
 	)
 
 	layout = lipgloss.Place(

@@ -1,39 +1,31 @@
-package app
+package ui
 
 import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Styles holds all the styling for the TUI
 type Styles struct {
-	// Title and header
 	Title    lipgloss.Style
 	Subtitle lipgloss.Style
 
-	// Status indicators
 	ActiveStatus   lipgloss.Style
 	InactiveStatus lipgloss.Style
 	StatusLabel    lipgloss.Style
 
-	// Sections
 	SectionBorder       lipgloss.Style
 	SectionTitle        lipgloss.Style
 	SectionBorderActive lipgloss.Style
 
-	// Policies
 	AllowPolicy  lipgloss.Style
 	DenyPolicy   lipgloss.Style
 	RejectPolicy lipgloss.Style
 
-	// Labels and values
 	Label lipgloss.Style
 	Value lipgloss.Style
 
-	// Footer
 	Footer    lipgloss.Style
 	FooterKey lipgloss.Style
 
-	// Error
 	Error lipgloss.Style
 }
 
@@ -62,7 +54,7 @@ func NewStyles() Styles {
 		overlay2 = lipgloss.Color("#9399b2")
 		overlay1 = lipgloss.Color("#7f849c")
 		// overlay0  = lipgloss.Color("#6c7086")
-		surface2  = lipgloss.Color("#585b70")
+		surface2 = lipgloss.Color("#585b70")
 		// surface1  = lipgloss.Color("#45475a")
 		// surface0  = lipgloss.Color("#313244")
 		// base      = lipgloss.Color("#1e1e2e")
