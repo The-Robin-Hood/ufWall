@@ -54,5 +54,5 @@ func (m Model) View(policy ufw.Policy) string {
 		ui.InsertCursor(routedLine, m.cursorLine == 2 && sectionActiveNoMenu, m.styles),
 	)
 
-	return ui.TitledBox("Default Policies", content, m.styles, -1, m.active)
+	return ui.TitledBox("Default Policies", content, m.styles, 38, m.active)
 }

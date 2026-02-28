@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"ufWall/internal/app"
 
@@ -10,6 +11,12 @@ import (
 )
 
 func main() {
+
+	if _, err := exec.LookPath("ufsw"); err != nil {
+		fmt.Println("Please first install ufw and try again.")
+		os.Exit(1)
+	}
+
 	f, err := tea.LogToFile("debug.log", "debug")
 	if err != nil {
 		panic(err)

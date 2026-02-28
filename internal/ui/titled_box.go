@@ -8,21 +8,20 @@ import (
 
 func TitledBox(title, content string, styles Styles, width int, activeSession bool) string {
 
-	borderColor := styles.SectionBorder.GetBorderTopForeground()
+	style := styles.SectionBorder
 	if activeSession {
-		borderColor = styles.SectionBorderActive.GetBorderTopForeground()
+		style = styles.SectionBorderActive
 		title = title + " ●"
 	}
+
+	borderColor := style.GetBorderTopForeground()
 
 	boxWidth := 0
 	if width != -1 {
 		boxWidth = width
 	}
 
-	style := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(borderColor).
-		Padding(1, 2)
+	style = style.Padding(1, 2)
 
 	if boxWidth > 0 {
 		style = style.Width(boxWidth)
