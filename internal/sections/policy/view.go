@@ -21,7 +21,7 @@ func (m Model) getPolicyStyle(policy string) lipgloss.Style {
 	}
 }
 
-func (m Model) View(policy ufw.Policy,active bool) string {
+func (m Model) View(policy ufw.Policy) string {
 
 	incomingStyle := m.getPolicyStyle(policy.DefaultIncoming)
 	outgoingStyle := m.getPolicyStyle(policy.DefaultOutgoing)
@@ -51,5 +51,5 @@ func (m Model) View(policy ufw.Policy,active bool) string {
 		outgoingLine,
 		routedLine,
 	)
-	return ui.TitledBox("Default Policies", content, m.styles, -1, active)
+	return ui.TitledBox("Default Policies", content, m.styles, -1, m.active)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m Model) View(stats ufw.Stats, active bool) string {
+func (m Model) View(stats ufw.Stats) string {
 	var statusText string
 	var statusStyle lipgloss.Style
 
@@ -33,18 +33,20 @@ func (m Model) View(stats ufw.Stats, active bool) string {
 		m.styles.Value.Render(strings.ToUpper(stats.Logging)),
 	)
 
-	totalRulesLine := lipgloss.JoinHorizontal(
+	rulesLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		m.styles.Label.Render("Total Rules:"),
 		m.styles.Value.Render(strconv.Itoa(stats.TotalRules)),
 	)
 
+	sectionActiveNoMenu := m.menu == nil && m.active
+
 	content := lipgloss.JoinVertical(
-		lipgloss.Left,
-		statusLine,
-		loggingLine,
-		totalRulesLine,
+		lipgloss.Top,
+		ui.InsertCursor(statusLine, m.cursorLine == 0 && sectionActiveNoMenu, m.styles),
+		ui.InsertCursor(loggingLine, m.cursorLine == 1 && sectionActiveNoMenu, m.styles),
+		ui.InsertCursor(rulesLine, false, m.styles),
 	)
 
-	return ui.TitledBox("Firewall Stats", content, m.styles, -1, active)
+	return ui.TitledBox("Firewall Stats", content, m.styles, -1, m.active)
 }

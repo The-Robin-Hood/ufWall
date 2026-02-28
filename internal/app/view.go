@@ -38,14 +38,14 @@ func (m model) View() string {
 
 	infoSection := lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		m.statsSection.View(m.stats,m.activeSection == sections.StatsSection),
-		m.policySection.View(m.policy,m.activeSection == sections.PolicySection),
+		m.statsSection.View(m.stats),
+		m.policySection.View(m.policy),
 	)
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		infoSection,
-		m.rulesSection.View(m.rules,m.activeSection == sections.RulesSection),
+		m.rulesSection.View(m.rules),
 	)
 
 	layout := lipgloss.JoinVertical(
@@ -64,6 +64,28 @@ func (m model) View() string {
 		lipgloss.Center,
 		layout,
 	)
+
+	if m.activeSection == sections.StatsSection && m.statsSection.GetMenu() != nil {
+		// Dim the background
+		dimmed := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#6c7086")). // Dimmed text
+			Render(layout)
+
+		// Get menu
+		menuView := m.statsSection.GetMenu().View()
+
+		// Center menu over dimmed background
+		centeredMenu := lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			menuView,
+		)
+
+		// Use ANSI codes to position menu absolutely
+		return dimmed + layout + centeredMenu // Position at row 10, col 30
+	}
 
 	return layout
 }

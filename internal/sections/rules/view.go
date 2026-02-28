@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m Model) View(rules []ufw.Rule, active bool) string {
+func (m Model) View(rules []ufw.Rule) string {
 	var rows []string
 
 	header := fmt.Sprintf(
@@ -38,5 +38,5 @@ func (m Model) View(rules []ufw.Rule, active bool) string {
 		lipgloss.Left,
 		table,
 	)
-	return ui.TitledBox("Active Rules", content, m.styles, -1, active)
+	return ui.TitledBox("Active Rules", content, m.styles, -1, m.active)
 }
