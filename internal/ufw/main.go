@@ -9,8 +9,8 @@ import (
 )
 
 type Stats struct {
-	Active  bool
-	Logging string
+	Active     bool
+	Logging    string
 	TotalRules int
 }
 
@@ -70,12 +70,12 @@ func extractPolicy(s string) string {
 	return "unknown"
 }
 
-func GetUFWData() (ufwData) {
+func GetUFWData() ufwData {
 	var data ufwData
 
 	numOut, _, errNum := RunSudo("status", "numbered")
 	verbOut, _, errVerb := RunSudo("status", "verbose")
-	
+
 	if errNum != nil && errVerb != nil {
 		data.Error = fmt.Errorf("ufw status: %w", errNum)
 		return data
@@ -137,6 +137,14 @@ func DefaultOutgoing(allow bool) (stdout, stderr string, err error) {
 		pol = "allow"
 	}
 	return RunSudo("default", pol, "outgoing")
+}
+
+func DefaultRouted(allow bool) (stdout, stderr string, err error) {
+	pol := "deny"
+	if allow {
+		pol = "allow"
+	}
+	return RunSudo("default", pol, "routed")
 }
 
 func SetLogging(level string) (stdout, stderr string, err error) {

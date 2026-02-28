@@ -9,6 +9,11 @@ func Footer(styles Styles, activeSection int, width int) string {
 	var keys []string
 
 	switch activeSection {
+	case sections.StatsSection:
+		keys = []string{"↑↓: navigate", "space: toggle menu"}
+	case sections.PolicySection:
+		keys = []string{"↑↓: navigate", "space: toggle allow/deny"}
+
 	case sections.RulesSection:
 		keys = []string{"↑↓: navigate", "enter: details", "d: delete"}
 	default:

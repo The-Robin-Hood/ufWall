@@ -37,6 +37,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case key.Matches(msg, keys.Bindings.Quit):
 				return m, tea.Quit
+
+			case key.Matches(msg, keys.Bindings.Execute):
+				if !m.stats.Active {
+					ufw.Enable()
+					return m, keys.Refresh()
+				}
 			}
 		}
 
@@ -44,6 +50,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case sections.StatsSection:
 			newStats, sectionCmd := m.statsSection.Update(msg)
 			m.statsSection = newStats
+			return m, sectionCmd
+
+		case sections.PolicySection:
+			newPolicy, sectionCmd := m.policySection.Update(msg, m.policy)
+			m.policySection = newPolicy
 			return m, sectionCmd
 		}
 

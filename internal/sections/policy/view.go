@@ -45,11 +45,14 @@ func (m Model) View(policy ufw.Policy) string {
 		routedStyle.Render(policy.DefaultRouted),
 	)
 
+	sectionActiveNoMenu := m.menu == nil && m.active
+
 	content := lipgloss.JoinVertical(
-		lipgloss.Left,
-		incomingLine,
-		outgoingLine,
-		routedLine,
+		lipgloss.Top,
+		ui.InsertCursor(incomingLine, m.cursorLine == 0 && sectionActiveNoMenu, m.styles),
+		ui.InsertCursor(outgoingLine, m.cursorLine == 1 && sectionActiveNoMenu, m.styles),
+		ui.InsertCursor(routedLine, m.cursorLine == 2 && sectionActiveNoMenu, m.styles),
 	)
+
 	return ui.TitledBox("Default Policies", content, m.styles, -1, m.active)
 }

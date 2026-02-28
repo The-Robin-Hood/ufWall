@@ -32,6 +32,23 @@ func (m model) View() string {
 		)
 	}
 
+	if !m.stats.Active {
+		prompt := lipgloss.JoinVertical(
+			lipgloss.Center,
+			m.styles.Error.Render("Firewall is disabled"),
+			"",
+			lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render("Press Space to activate"),
+			lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render("Press Esc or Q to quit"),
+		)
+		return lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			prompt,
+		)
+	}
+
 	title := m.styles.Title.
 		Width(containerWidth).
 		Render("Firewall Manager")

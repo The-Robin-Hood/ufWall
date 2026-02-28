@@ -35,16 +35,14 @@ var Bindings = KeyMap{
 
 	Refresh: key.NewBinding(
 		key.WithKeys("r"),
-		key.WithHelp("r", "refresh"),
 	),
 
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q/esc", "quit"),
 	),
 
 	Execute: key.NewBinding(
-		key.WithKeys("enter"),
+		key.WithKeys(" ", "enter"),
 	),
 }
 
