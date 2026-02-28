@@ -4,20 +4,12 @@ import (
 	"ufWall/internal/ui"
 )
 
-type MenuType int
-
-const (
-	MenuNone     MenuType = iota
-	MenuFirewall          // Enable/Disable
-	MenuLogging           // off/on/low/medium/high/full
-)
-
 type Model struct {
 	styles     ui.Styles
-	cursorLine int // 0=status, 1=logging
+	totalOpts  int
+	cursorLine int 
 	showMenu   bool
 	menu       *ui.Menu
-	menuType   MenuType
 	active     bool
 }
 
@@ -27,8 +19,8 @@ func New(styles ui.Styles) Model {
 		cursorLine: 0,
 		showMenu:   false,
 		menu:       nil,
-		menuType:   MenuNone,
 		active:     true,
+		totalOpts:  2,
 	}
 }
 
@@ -48,6 +40,5 @@ func (m Model) HasOpenMenu() bool {
 }
 
 func (m Model) GetMenu() *ui.Menu {
-    return m.menu
+	return m.menu
 }
-

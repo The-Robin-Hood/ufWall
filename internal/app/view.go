@@ -66,25 +66,15 @@ func (m model) View() string {
 	)
 
 	if m.activeSection == sections.StatsSection && m.statsSection.GetMenu() != nil {
-		// Dim the background
-		dimmed := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#6c7086")). // Dimmed text
-			Render(layout)
+		dimmed := "\x1b[2m" + lipgloss.NewStyle().Faint(true).Render(layout) + "\x1b[0m"
+		menuView := m.statsSection.GetMenu().View(m.styles)
 
-		// Get menu
-		menuView := m.statsSection.GetMenu().View()
+		menuW := lipgloss.Width(menuView)
+		menuH := lipgloss.Height(menuView)
+		x := (m.width - menuW) / 2
+		y := (m.height - menuH) / 2
 
-		// Center menu over dimmed background
-		centeredMenu := lipgloss.Place(
-			m.width,
-			m.height,
-			lipgloss.Center,
-			lipgloss.Center,
-			menuView,
-		)
-
-		// Use ANSI codes to position menu absolutely
-		return dimmed + layout + centeredMenu // Position at row 10, col 30
+		return PlaceOverlay(x, y, menuView, dimmed)
 	}
 
 	return layout

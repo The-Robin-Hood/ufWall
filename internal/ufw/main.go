@@ -139,6 +139,10 @@ func DefaultOutgoing(allow bool) (stdout, stderr string, err error) {
 	return RunSudo("default", pol, "outgoing")
 }
 
+func SetLogging(level string) (stdout, stderr string, err error) {
+	return RunSudo("logging", level)
+}
+
 func AddRule(rule string) (stdout, stderr string, err error) {
 	parts := strings.Fields(rule)
 	if len(parts) == 0 {

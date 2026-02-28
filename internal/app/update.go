@@ -1,7 +1,7 @@
 package app
 
 import (
-	"log"
+	"ufWall/internal/keys"
 	"ufWall/internal/sections"
 	"ufWall/internal/ufw"
 
@@ -17,42 +17,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		switch m.activeSection {
 
-		case sections.StatsSection:
-			newStats, sectionCmd := m.statsSection.Update(msg)
-			m.statsSection = newStats
-			if m.statsSection.HasOpenMenu() {
-				return m, sectionCmd
+		if !m.isMenuOpen() {
+			switch {
+			case key.Matches(msg, keys.Bindings.NextSection):
+				m.blurAllSections()
+				m.activeSection = (m.activeSection + 1) % 3
+				m.focusActiveSection()
+				return m, nil
+
+			case key.Matches(msg, keys.Bindings.PrevSection):
+				m.blurAllSections()
+				m.activeSection = (m.activeSection - 1 + 3) % 3
+				m.focusActiveSection()
+				return m, nil
+
+			case key.Matches(msg, keys.Bindings.Refresh):
+				return m, keys.Refresh()
+
+			case key.Matches(msg, keys.Bindings.Quit):
+				return m, tea.Quit
 			}
 		}
 
-		switch {
-		case key.Matches(msg, Keys.NextSection):
-			m.blurAllSections()
-			m.activeSection = (m.activeSection + 1) % 3
-			m.focusActiveSection()
-			return m, nil
-
-		case key.Matches(msg, Keys.PrevSection):
-			m.blurAllSections()
-			m.activeSection = (m.activeSection - 1 + 3) % 3
-			m.focusActiveSection()
-			return m, nil
-
-		case key.Matches(msg, Keys.Refresh):
-			return m, m.refreshData()
-
-		case key.Matches(msg, Keys.Quit):
-			log.Println("EXITING")
-			return m, tea.Quit
+		switch m.activeSection {
+		case sections.StatsSection:
+			newStats, sectionCmd := m.statsSection.Update(msg)
+			m.statsSection = newStats
+			return m, sectionCmd
 		}
 
-	case RefreshMsg:
-		m.rules = msg.Rules
-		m.policy = msg.Policy
-		m.stats = msg.Stats
-		m.err = msg.Error
+	case keys.RefreshMsg:
+		data := ufw.GetUFWData()
+		m.rules = data.Rules
+		m.policy = data.Policy
+		m.stats = data.Stats
+		m.err = data.Error
 		return m, nil
 
 	case tea.WindowSizeMsg:
@@ -81,21 +81,6 @@ func (m *model) focusActiveSection() {
 	}
 }
 
-func (m model) refreshData() tea.Cmd {
-	return func() tea.Msg {
-		data := ufw.GetUFWData()
-		return RefreshMsg{
-			Rules:  data.Rules,
-			Policy: data.Policy,
-			Stats:  data.Stats,
-			Error:  data.Error,
-		}
-	}
-}
-
-type RefreshMsg struct {
-	Rules  []ufw.Rule
-	Policy ufw.Policy
-	Stats  ufw.Stats
-	Error  error
+func (m *model) isMenuOpen() bool {
+	return m.statsSection.GetMenu() != nil
 }

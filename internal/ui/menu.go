@@ -3,17 +3,24 @@ package ui
 
 import (
 	"strings"
+	"ufWall/internal/keys"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
+type MenuItem struct {
+	Label  string
+	Action func() tea.Cmd
+}
+
 type Menu struct {
-	Options  []string
+	Options  []MenuItem
 	Selected int
 	styles   Styles
 }
 
-func NewMenu(options []string, styles Styles) Menu {
+func NewMenu(options []MenuItem, styles Styles) Menu {
 	return Menu{
 		Options:  options,
 		Selected: 0,
@@ -33,14 +40,16 @@ func (m *Menu) Down() {
 	}
 }
 
-func (m Menu) SelectedOption() string {
+func (m Menu) ExecuteSelected() tea.Cmd {
 	if m.Selected >= 0 && m.Selected < len(m.Options) {
-		return m.Options[m.Selected]
+		if m.Options[m.Selected].Action != nil {
+			return m.Options[m.Selected].Action()
+		}
 	}
-	return ""
+	return nil
 }
 
-func (m Menu) View() string {
+func (m Menu) View(styles Styles) string {
 	var lines []string
 
 	for i, option := range m.Options {
@@ -52,16 +61,45 @@ func (m Menu) View() string {
 			style = m.styles.ActiveStatus.Bold(true)
 		}
 
-		lines = append(lines, prefix+style.Render(option))
+		lines = append(lines, prefix+style.Render(option.Label))
 	}
 
 	content := strings.Join(lines, "\n")
 
-	menuStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#89b4fa")).
-		Padding(1, 2).
-		Background(lipgloss.Color("#1e1e2e"))
+	return styles.Menu.Render(content)
+}
 
-	return menuStyle.Render(content)
+func (m *Menu) Update(msg tea.Msg) (bool) {
+	switch msg := msg.(type) {
+
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, keys.Bindings.CursorUp):
+			m.Up()
+		case key.Matches(msg, keys.Bindings.CursorDown):
+			m.Down()
+		case key.Matches(msg, keys.Bindings.Execute):
+			m.ExecuteSelected()
+			return true
+		case key.Matches(msg, keys.Bindings.Quit):
+			return true
+		}
+	}
+	return false
+}
+
+func MakeMenuItems(labels []string, handler func(string) tea.Cmd) []MenuItem {
+	items := make([]MenuItem, len(labels))
+
+	for i, label := range labels {
+		l := label // capture loop variable!
+		items[i] = MenuItem{
+			Label: l,
+			Action: func() tea.Cmd {
+				return handler(l)
+			},
+		}
+	}
+
+	return items
 }

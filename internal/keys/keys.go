@@ -1,24 +1,28 @@
-package app
+package keys
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type KeyMap struct {
-	Quit        key.Binding
-	Refresh     key.Binding
-	
+	Quit    key.Binding
+	Refresh key.Binding
+
 	NextSection key.Binding
 	PrevSection key.Binding
 	CursorUp    key.Binding
 	CursorDown  key.Binding
+	Execute     key.Binding
 }
 
-var Keys = KeyMap{
+var Bindings = KeyMap{
 	CursorUp: key.NewBinding(
-		key.WithKeys("up"),
+		key.WithKeys("up", "k"),
 	),
 
 	CursorDown: key.NewBinding(
-		key.WithKeys("down"),
+		key.WithKeys("down", "j"),
 	),
 
 	PrevSection: key.NewBinding(
@@ -38,4 +42,16 @@ var Keys = KeyMap{
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q/esc", "quit"),
 	),
+
+	Execute: key.NewBinding(
+		key.WithKeys("enter"),
+	),
+}
+
+type RefreshMsg struct{}
+
+func Refresh() tea.Cmd {
+	return func() tea.Msg {
+		return RefreshMsg{}
+	}
 }

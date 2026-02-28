@@ -16,6 +16,8 @@ type Styles struct {
 	SectionTitle        lipgloss.Style
 	SectionBorderActive lipgloss.Style
 
+	Menu lipgloss.Style
+
 	AllowPolicy  lipgloss.Style
 	DenyPolicy   lipgloss.Style
 	RejectPolicy lipgloss.Style
@@ -29,37 +31,22 @@ type Styles struct {
 	Error lipgloss.Style
 }
 
-// NewStyles creates and returns styled components with Catppuccin Mocha theme
 func NewStyles() Styles {
-	// Catppuccin Mocha Color Palette
 	var (
-		// rosewater = lipgloss.Color("#f5e0dc")
-		// flamingo  = lipgloss.Color("#f2cdcd")
-		// pink      = lipgloss.Color("#f5c2e7")
 		mauve  = lipgloss.Color("#cba6f7")
 		red    = lipgloss.Color("#f38ba8")
 		maroon = lipgloss.Color("#eba0ac")
 		peach  = lipgloss.Color("#fab387")
-		// yellow    = lipgloss.Color("#f9e2af")
+		yellow    = lipgloss.Color("#f9e2af")
 		green = lipgloss.Color("#a6e3a1")
-		// teal      = lipgloss.Color("#94e2d5")
 		sky = lipgloss.Color("#89dceb")
-		// sapphire  = lipgloss.Color("#74c7ec")
-		// blue      = lipgloss.Color("#89b4fa")
 		lavender = lipgloss.Color("#b4befe")
 
 		text = lipgloss.Color("#cdd6f4")
-		// subtext1  = lipgloss.Color("#bac2de")
 		subtext0 = lipgloss.Color("#a6adc8")
 		overlay2 = lipgloss.Color("#9399b2")
 		overlay1 = lipgloss.Color("#7f849c")
-		// overlay0  = lipgloss.Color("#6c7086")
 		surface2 = lipgloss.Color("#585b70")
-		// surface1  = lipgloss.Color("#45475a")
-		// surface0  = lipgloss.Color("#313244")
-		// base      = lipgloss.Color("#1e1e2e")
-		// mantle    = lipgloss.Color("#181825")
-		// crust     = lipgloss.Color("#11111b")
 	)
 
 	return Styles{
@@ -92,6 +79,11 @@ func NewStyles() Styles {
 		SectionBorderActive: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(mauve),
+
+		Menu: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color(yellow)).
+			Padding(1, 2),
 
 		SectionTitle: lipgloss.NewStyle().
 			Bold(true).

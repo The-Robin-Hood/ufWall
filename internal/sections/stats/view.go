@@ -48,5 +48,5 @@ func (m Model) View(stats ufw.Stats) string {
 		ui.InsertCursor(rulesLine, false, m.styles),
 	)
 
-	return ui.TitledBox("Firewall Stats", content, m.styles, -1, m.active)
+	return ui.TitledBox("Firewall Stats", content, m.styles, 35, m.active)
 }

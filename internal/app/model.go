@@ -23,6 +23,8 @@ type model struct {
 	statsSection stats.Model	
 	policySection policy.Model
 	rulesSection  rules.Model
+
+	openMenu bool
 }
 
 func InitialModel() model {
@@ -40,5 +42,7 @@ func InitialModel() model {
 		statsSection: stats.New(styles),
 		policySection: policy.New(styles),
 		rulesSection: rules.New(styles),
+
+		openMenu : false,
 	}
 }

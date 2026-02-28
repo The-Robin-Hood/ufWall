@@ -1,99 +1,74 @@
 package stats
 
 import (
+	"log"
+	"ufWall/internal/keys"
+	"ufWall/internal/ufw"
 	"ufWall/internal/ui"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	if key, ok := msg.(tea.KeyMsg); ok {
-		if m.menu != nil {
-			return m.handleMenuInput(key)
+	if m.menu != nil {
+		if quit := m.menu.Update(msg); quit {
+			m.menu = nil
+			return m, keys.Refresh()
 		}
-		return m.handleNavigation(key)
+	} else {
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch {
+			case key.Matches(msg, keys.Bindings.CursorUp):
+				if m.cursorLine > 0 {
+					m.cursorLine--
+				}
+			case key.Matches(msg, keys.Bindings.CursorDown):
+				if m.cursorLine < m.totalOpts - 1 {
+					m.cursorLine++
+				}
+			case key.Matches(msg, keys.Bindings.Execute):
+				return m.openMenu()
+			}
+		}
 	}
-	return m, nil
-}
-
-func (m Model) handleNavigation(key tea.KeyMsg) (Model, tea.Cmd) {
-	switch key.String() {
-	case "up", "k":
-		if m.cursorLine > 0 {
-			m.cursorLine--
-		}
-
-	case "down", "j":
-		if m.cursorLine < 1  {
-			m.cursorLine++
-		}
-
-	case "enter":
-		return m.openMenu()
-	}
-
 	return m, nil
 }
 
 func (m Model) openMenu() (Model, tea.Cmd) {
-	var options []string
+	var options []ui.MenuItem
 
 	switch m.cursorLine {
-	case 0: 
-		m.menuType = MenuFirewall
-		options = []string{"Enable Firewall", "Disable Firewall"}
+	case 0:
+		options = ui.MakeMenuItems(
+			[]string{"Enable Firewall", "Disable Firewall"},
+			func(label string) tea.Cmd {
+				switch label {
+				case "Enable Firewall":
+					log.Println("Enabling Firewall")
+					ufw.Enable()
+				case "Disable Firewall":
+					log.Println("Disabling Firewall")
+					ufw.Disable()
+					return nil
+				}
+				return nil
+			},
+		)
 
-	case 1: 		
-		m.menuType = MenuLogging
-		options = []string{"off", "low", "medium", "high", "full"}
-	
+	case 1:
+		options = ui.MakeMenuItems(
+			[]string{"off", "low", "medium", "high", "full"},
+			func(level string) tea.Cmd {
+				log.Println("Setting Log Level :", level)
+				ufw.SetLogging(level)
+				return nil
+			},
+		)
 	}
 
 	menu := ui.NewMenu(options, m.styles)
 	m.menu = &menu
 	return m, nil
 }
-
-func (m Model) handleMenuInput(key tea.KeyMsg) (Model, tea.Cmd) {
-	switch key.String() {
-	case "up", "k":
-		m.menu.Up()
-
-	case "down", "j":
-		m.menu.Down()
-
-	case "enter":
-		return m.executeMenuAction()
-
-	case "esc":
-		m.menu = nil
-		m.menuType = MenuNone
-	}
-
-	return m, nil
-}
-
-func (m Model) executeMenuAction() (Model, tea.Cmd) {
-	if m.menu == nil {
-		return m, nil
-	}
-
-	// selectedOption := m.menu.SelectedOption()
-
-	switch m.menuType {
-	case MenuFirewall:
-		// Handle enable/disable
-		// TODO: Call UFW command based on selectedOption
-
-	case MenuLogging:
-		// Handle logging level change
-		// TODO: Call UFW command with selectedOption (off/on/low/etc)
-	}
-
-	// Close menu
-	m.menu = nil
-	m.menuType = MenuNone
-
-	return m, nil
-}
-
