@@ -56,6 +56,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			newPolicy, sectionCmd := m.policySection.Update(msg, m.policy)
 			m.policySection = newPolicy
 			return m, sectionCmd
+
+		case sections.RulesSection:
+			newRules, sectionCmd := m.rulesSection.Update(msg,m.rules)
+			m.rulesSection = newRules
+			return m, sectionCmd
 		}
 
 	case keys.RefreshMsg:
@@ -93,5 +98,5 @@ func (m *model) focusActiveSection() {
 }
 
 func (m *model) isMenuOpen() bool {
-	return m.statsSection.GetMenu() != nil
+	return m.statsSection.GetMenu() != nil || m.rulesSection.GetMenu() != nil
 }

@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"ufWall/internal/sections"
 	"ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
@@ -82,9 +81,18 @@ func (m model) View() string {
 		layout,
 	)
 
-	if m.activeSection == sections.StatsSection && m.statsSection.GetMenu() != nil {
+	var menuOpen *ui.Menu
+
+	if m.statsSection.GetMenu() != nil {
+		menuOpen = m.statsSection.GetMenu()
+	} else if m.rulesSection.GetMenu() != nil {
+		menuOpen = m.rulesSection.GetMenu()
+	}
+
+	if menuOpen != nil {
+
 		dimmed := "\x1b[2m" + lipgloss.NewStyle().Faint(true).Render(layout) + "\x1b[0m"
-		menuView := m.statsSection.GetMenu().View(m.styles)
+		menuView := menuOpen.View(m.styles)
 
 		menuW := lipgloss.Width(menuView)
 		menuH := lipgloss.Height(menuView)

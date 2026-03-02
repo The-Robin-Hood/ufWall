@@ -18,9 +18,11 @@ func (m Model) View(rules []ufw.Rule) string {
 
 	headerContent := m.styles.Label.UnsetWidth().Render(header)
 	line := strings.Repeat("─", lipgloss.Width(headerContent))
-	rows = append(rows, headerContent, m.styles.Label.UnsetWidth().Render(line))
+	rows = append(rows, "  "+headerContent, "  "+m.styles.Label.UnsetWidth().Render(line))
 
-	for _, r := range rules {
+	sectionActiveNoMenu := m.menu == nil && m.active
+
+	for i, r := range rules {
 		row := fmt.Sprintf(
 			"%-3d │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
 			r.Num,
@@ -31,7 +33,7 @@ func (m Model) View(rules []ufw.Rule) string {
 			r.ToDest,
 			r.ToPort,
 		)
-		rows = append(rows, m.styles.Value.Render(row))
+		rows = append(rows, ui.InsertCursor(row, m.cursorLine == i && sectionActiveNoMenu, m.styles))
 	}
 	table := strings.Join(rows, "\n")
 	content := lipgloss.JoinVertical(

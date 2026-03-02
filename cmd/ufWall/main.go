@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	if _, err := exec.LookPath("ufsw"); err != nil {
+	if _, err := exec.LookPath("ufw"); err != nil {
 		fmt.Println("Please first install ufw and try again.")
 		os.Exit(1)
 	}

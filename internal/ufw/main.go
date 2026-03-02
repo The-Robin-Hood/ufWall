@@ -120,7 +120,7 @@ func Disable() (stdout, stderr string, err error) {
 }
 
 func DeleteRule(num int) (stdout, stderr string, err error) {
-	return RunSudo("delete", fmt.Sprintf("%d", num))
+	return RunSudo("--force", "delete", fmt.Sprintf("%d", num))
 }
 
 func DefaultIncoming(allow bool) (stdout, stderr string, err error) {
