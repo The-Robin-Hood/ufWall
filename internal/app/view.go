@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"ufWall/internal/sections/rules"
 	"ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
@@ -70,7 +71,7 @@ func (m model) View() string {
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		infoSection,
-		m.rulesSection.View(m.rules),
+		m.rulesSection.View(rules.RulesData{IPv4: m.ipv4Rules, IPv6: m.ipv6Rules}),
 	)
 
 	layout := lipgloss.JoinVertical(
@@ -96,6 +97,10 @@ func (m model) View() string {
 
 	if m.rulesSection.ShowingDetails() {
 		return m.renderCenteredOverlay(m.rulesSection.DetailView(), layout)
+	}
+
+	if m.rulesSection.ShowingAddWizard() {
+		return m.renderCenteredOverlay(m.rulesSection.AddWizardView(), layout)
 	}
 
 	if menu := m.statsSection.GetMenu(); menu != nil {

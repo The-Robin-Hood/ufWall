@@ -9,10 +9,12 @@ import (
 )
 
 type model struct {
-	stats  ufw.Stats
-	policy ufw.Policy
-	rules  []ufw.Rule
-	err    error
+	stats     ufw.Stats
+	policy    ufw.Policy
+	rules     []ufw.Rule // (kept for backward compat)
+	ipv4Rules []ufw.Rule
+	ipv6Rules []ufw.Rule
+	err       error
 
 	activeSection int
 
@@ -29,9 +31,11 @@ func InitialModel() model {
 	data := ufw.GetUFWData()
 	styles := ui.NewStyles()
 	return model{
-		stats:  data.Stats,
-		rules:  data.Rules,
-		policy: data.Policy,
+		stats:     data.Stats,
+		rules:     data.Rules,
+		ipv4Rules: data.IPv4Rules,
+		ipv6Rules: data.IPv6Rules,
+		policy:    data.Policy,
 
 		styles: styles,
 		width:  87,

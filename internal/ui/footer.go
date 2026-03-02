@@ -21,6 +21,6 @@ func Footer(styles Styles, activeSection int, width int) string {
 	}
 
 	keys = append(keys, "q: quit")
-	footerText := strings.Join(keys, "  •  ")
+	footerText := strings.Join(keys, "  |  ")
 	return styles.Footer.Width(width).Render(footerText)
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"ufWall/internal/keys"
 	"ufWall/internal/sections"
+	"ufWall/internal/sections/rules"
 	"ufWall/internal/ufw"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -58,7 +59,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, sectionCmd
 
 		case sections.RulesSection:
-			newRules, sectionCmd := m.rulesSection.Update(msg, m.rules)
+			newRules, sectionCmd := m.rulesSection.Update(msg, rules.RulesData{IPv4: m.ipv4Rules, IPv6: m.ipv6Rules})
 			m.rulesSection = newRules
 			return m, sectionCmd
 		}
@@ -66,6 +67,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case keys.RefreshMsg:
 		data := ufw.GetUFWData()
 		m.rules = data.Rules
+		m.ipv4Rules = data.IPv4Rules
+		m.ipv6Rules = data.IPv6Rules
 		m.policy = data.Policy
 		m.stats = data.Stats
 		m.err = data.Error

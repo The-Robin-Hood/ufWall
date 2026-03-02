@@ -16,6 +16,10 @@ type KeyMap struct {
 	Execute     key.Binding
 	Info        key.Binding
 	Delete      key.Binding
+	SwitchTable key.Binding
+	AddRule     key.Binding
+	CustomInput key.Binding
+	Back        key.Binding
 }
 
 var Bindings = KeyMap{
@@ -53,6 +57,22 @@ var Bindings = KeyMap{
 
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
+	),
+
+	SwitchTable: key.NewBinding(
+		key.WithKeys("s"),
+	),
+
+	AddRule: key.NewBinding(
+		key.WithKeys("a"),
+	),
+
+	CustomInput: key.NewBinding(
+		key.WithKeys("c"),
+	),
+
+	Back: key.NewBinding(
+		key.WithKeys("b", "backspace"),
 	),
 }
 
