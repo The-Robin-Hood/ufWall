@@ -23,19 +23,19 @@ func (m Model) View(stats ufw.Stats) string {
 
 	statusLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Status:"),
+		m.styles.Label.Width(15).Render("Status:"),
 		statusStyle.Render(statusText),
 	)
 
 	loggingLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Logging:"),
+		m.styles.Label.Width(15).Render("Logging:"),
 		m.styles.Value.Render(strings.ToUpper(stats.Logging)),
 	)
 
 	rulesLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Total Rules:"),
+		m.styles.Label.Width(15).Render("Total Rules:"),
 		m.styles.Value.Render(strconv.Itoa(stats.TotalRules)),
 	)
 

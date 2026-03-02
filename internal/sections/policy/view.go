@@ -15,19 +15,19 @@ func (m Model) View(policy ufw.Policy) string {
 
 	incomingLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Incoming:"),
+		m.styles.Label.Width(15).Render("Incoming:"),
 		incomingStyle.Render(policy.DefaultIncoming),
 	)
 
 	outgoingLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Outgoing:"),
+		m.styles.Label.Width(15).Render("Outgoing:"),
 		outgoingStyle.Render(policy.DefaultOutgoing),
 	)
 
 	routedLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
-		m.styles.Label.Render("Routed:"),
+		m.styles.Label.Width(15).Render("Routed:"),
 		routedStyle.Render(policy.DefaultRouted),
 	)
 

@@ -111,8 +111,7 @@ func NewStyles() Styles {
 			Foreground(peach),
 
 		Label: lipgloss.NewStyle().
-			Foreground(subtext0).
-			Width(15),
+			Foreground(subtext0),
 
 		Value: lipgloss.NewStyle().
 			Foreground(text).
