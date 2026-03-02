@@ -14,6 +14,8 @@ type KeyMap struct {
 	CursorUp    key.Binding
 	CursorDown  key.Binding
 	Execute     key.Binding
+	Info        key.Binding
+	Delete      key.Binding
 }
 
 var Bindings = KeyMap{
@@ -43,6 +45,14 @@ var Bindings = KeyMap{
 
 	Execute: key.NewBinding(
 		key.WithKeys(" ", "enter"),
+	),
+
+	Info: key.NewBinding(
+		key.WithKeys("i"),
+	),
+
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
 	),
 }
 

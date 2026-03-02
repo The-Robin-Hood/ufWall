@@ -29,7 +29,8 @@ func (m Model) Update(msg tea.Msg, policy ufw.Policy) (Model, tea.Cmd) {
 			case 2:
 				ufw.DefaultRouted(!(policy.DefaultRouted == "ALLOW"))
 			}
+			return m, keys.Refresh()
 		}
 	}
-	return m, keys.Refresh()
+	return m, nil
 }

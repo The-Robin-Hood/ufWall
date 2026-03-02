@@ -7,6 +7,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+func (m model) renderCenteredOverlay(overlay, background string) string {
+	dimmed := "\x1b[2m" + lipgloss.NewStyle().Faint(true).Render(background) + "\x1b[0m"
+	overlayW := lipgloss.Width(overlay)
+	overlayH := lipgloss.Height(overlay)
+	x := (m.width - overlayW) / 2
+	y := (m.height - overlayH) / 2
+	return PlaceOverlay(x, y, overlay, dimmed)
+}
+
 func (m model) View() string {
 	const minWidth, minHeight = 87, 30
 	const containerWidth, containerHeight = minWidth - 5, minHeight - 3
@@ -81,25 +90,20 @@ func (m model) View() string {
 		layout,
 	)
 
-	var menuOpen *ui.Menu
-
-	if m.statsSection.GetMenu() != nil {
-		menuOpen = m.statsSection.GetMenu()
-	} else if m.rulesSection.GetMenu() != nil {
-		menuOpen = m.rulesSection.GetMenu()
+	if m.rulesSection.ShowingDeleteConfirm() {
+		return m.renderCenteredOverlay(m.rulesSection.DeleteConfirmView(), layout)
 	}
 
-	if menuOpen != nil {
+	if m.rulesSection.ShowingDetails() {
+		return m.renderCenteredOverlay(m.rulesSection.DetailView(), layout)
+	}
 
-		dimmed := "\x1b[2m" + lipgloss.NewStyle().Faint(true).Render(layout) + "\x1b[0m"
-		menuView := menuOpen.View(m.styles)
+	if menu := m.statsSection.GetMenu(); menu != nil {
+		return m.renderCenteredOverlay(menu.View(m.styles), layout)
+	}
 
-		menuW := lipgloss.Width(menuView)
-		menuH := lipgloss.Height(menuView)
-		x := (m.width - menuW) / 2
-		y := (m.height - menuH) / 2
-
-		return PlaceOverlay(x, y, menuView, dimmed)
+	if menu := m.rulesSection.GetMenu(); menu != nil {
+		return m.renderCenteredOverlay(menu.View(m.styles), layout)
 	}
 
 	return layout

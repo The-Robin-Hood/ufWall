@@ -9,10 +9,10 @@ import (
 )
 
 type model struct {
-	stats ufw.Stats
+	stats  ufw.Stats
 	policy ufw.Policy
-	rules []ufw.Rule
-  err error 
+	rules  []ufw.Rule
+	err    error
 
 	activeSection int
 
@@ -20,11 +20,9 @@ type model struct {
 	height int
 	styles ui.Styles
 
-	statsSection stats.Model	
+	statsSection  stats.Model
 	policySection policy.Model
 	rulesSection  rules.Model
-
-	openMenu bool
 }
 
 func InitialModel() model {
@@ -39,10 +37,8 @@ func InitialModel() model {
 		width:  87,
 		height: 30,
 
-		statsSection: stats.New(styles),
+		statsSection:  stats.New(styles),
 		policySection: policy.New(styles),
-		rulesSection: rules.New(styles),
-
-		openMenu : false,
+		rulesSection:  rules.New(styles),
 	}
 }

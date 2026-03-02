@@ -7,8 +7,7 @@ import (
 type Model struct {
 	styles     ui.Styles
 	totalOpts  int
-	cursorLine int 
-	showMenu   bool
+	cursorLine int
 	menu       *ui.Menu
 	active     bool
 }
@@ -17,7 +16,6 @@ func New(styles ui.Styles) Model {
 	return Model{
 		styles:     styles,
 		cursorLine: 0,
-		showMenu:   false,
 		menu:       nil,
 		active:     true,
 		totalOpts:  2,
@@ -31,7 +29,7 @@ func (m *Model) Focus() {
 
 func (m *Model) Blur() {
 	m.active = false
-	m.showMenu = false
+	m.menu = nil
 	m.cursorLine = 0
 }
 
