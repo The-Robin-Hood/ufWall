@@ -62,6 +62,8 @@ func parseRuleLine(num int, line string) Rule {
 		Raw: line,
 	}
 
+	rule.IPv6 = strings.Contains(line, "(v6)")
+
 	commentIdx := strings.Index(line, "#")
 	if commentIdx >= 0 {
 		rule.Comment = strings.TrimSpace(line[commentIdx+1:])

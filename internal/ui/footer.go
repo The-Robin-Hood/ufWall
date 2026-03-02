@@ -15,12 +15,14 @@ func Footer(styles Styles, activeSection int, width int) string {
 		keys = []string{"↑↓: navigate", "space: toggle allow/deny"}
 
 	case sections.RulesSection:
-		keys = []string{"↑↓: navigate", "enter: actions", "i: info", "d: delete"}
+		keys = []string{"enter: actions", "i: info", "a: add rule", "d: delete rule", "s: switch IPv4/IPv6"}
 	default:
 		keys = []string{"tab: next section", "r: refresh"}
 	}
 
-	keys = append(keys, "q: quit")
-	footerText := strings.Join(keys, "  |  ")
+	if len(keys) < 3 {
+		keys = append(keys, "q: quit")
+	}
+	footerText := strings.Join(keys, " | ")
 	return styles.Footer.Width(width).Render(footerText)
 }

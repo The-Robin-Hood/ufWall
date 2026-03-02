@@ -10,8 +10,62 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m Model) View(rules []ufw.Rule) string {
+type RulesData struct {
+	IPv4 []ufw.Rule
+	IPv6 []ufw.Rule
+}
+
+func (m Model) View(data RulesData) string {
+	sectionActiveNoMenu := m.menu == nil && m.active && !m.showDetails && !m.showDeleteConfirm
+
+	ipTable := m.renderTable(data.IPv4, data.IPv6, m.ipv4CursorLine, sectionActiveNoMenu && m.activeTable == IPv4Table)
+	if m.activeTable == IPv6Table {
+		ipTable = m.renderTable(data.IPv4, data.IPv6, m.ipv6CursorLine, sectionActiveNoMenu && m.activeTable == IPv6Table)
+	}
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		ipTable,
+	)
+
+	return ui.TitledBox("Active Rules", content, m.styles, -1, m.active)
+}
+
+func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, cursorLine int, isActive bool) string {
 	var rows []string
+
+	titleStyle := m.styles.Label
+	if isActive {
+		titleStyle = titleStyle.Bold(true).Foreground(lipgloss.Color("12"))
+	}
+	activeTitle := "IPv4 Rules"
+	inActiveTitle := "IPv6 Rules"
+
+	rules := ipV4Rules
+
+	maxIPv4 := len(fmt.Sprintf("%s (%d)", "IPv4 Rules", 9999))
+	maxIPv6 := len(fmt.Sprintf("%s (%d)", "IPv6 Rules", 9999))
+
+	padTitle := func(title string, count int, width int) string {
+		return fmt.Sprintf("%-*s", width, fmt.Sprintf("%s (%d)", title, count))
+	}
+
+	tabTitle := titleStyle.Render(padTitle(activeTitle, len(ipV4Rules), maxIPv4)) + "|  " +
+		m.styles.Label.Foreground(lipgloss.Color("241")).Render(padTitle(inActiveTitle, len(ipV6Rules), maxIPv6))
+
+	if m.activeTable == IPv6Table {
+		rules = ipV6Rules
+		tabTitle = m.styles.Label.Foreground(lipgloss.Color("241")).Render(padTitle(activeTitle, len(ipV4Rules), maxIPv4)) + "|  " +
+			titleStyle.Render(padTitle(inActiveTitle, len(ipV6Rules), maxIPv6))
+	}
+
+	rows = append(rows, tabTitle)
+	rows = append(rows, "")
+
+	if len(rules) == 0 {
+		emptyMsg := m.styles.Label.Foreground(lipgloss.Color("241")).Render("  (no rules)")
+		rows = append(rows, emptyMsg)
+		return strings.Join(rows, "\n")
+	}
 
 	header := fmt.Sprintf(
 		"%-3s │ %-6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
@@ -21,8 +75,6 @@ func (m Model) View(rules []ufw.Rule) string {
 	line := strings.Repeat("─", lipgloss.Width(headerContent))
 	rows = append(rows, "  "+headerContent, "  "+m.styles.Label.UnsetWidth().Render(line))
 
-	sectionActiveNoMenu := m.menu == nil && m.active && !m.showDetails && !m.showDeleteConfirm
-
 	for i, r := range rules {
 		action := fmt.Sprintf("%-6s", r.Action)
 		row := fmt.Sprintf(
@@ -30,22 +82,25 @@ func (m Model) View(rules []ufw.Rule) string {
 			r.Num,
 			action,
 			r.ToProtocol,
-			r.FromSource,
-			r.FromPort,
-			r.ToDest,
-			r.ToPort,
+			truncate(r.FromSource, 16),
+			truncate(r.FromPort, 5),
+			truncate(r.ToDest, 16),
+			truncate(r.ToPort, 5),
 		)
-		rows = append(rows, ui.InsertCursorRulesSection(row, m.cursorLine == i && sectionActiveNoMenu, m.styles, r.Action))
+		rows = append(rows, ui.InsertCursorRulesSection(row, cursorLine == i && isActive, m.styles, r.Action))
 	}
-	table := strings.Join(rows, "\n")
-	content := lipgloss.JoinVertical(
-		lipgloss.Left,
-		table,
-	)
-	return ui.TitledBox("Active Rules", content, m.styles, -1, m.active)
+
+	return strings.Join(rows, "\n")
 }
 
-// DetailView renders the rule detail overlay
+func truncate(s string, maxLen int) string {
+	s = strings.TrimSuffix(s, " (v6)")
+	if len(s) > maxLen {
+		return s[:maxLen-1] + "…"
+	}
+	return s
+}
+
 func (m Model) DetailView() string {
 	if m.detailRule == nil {
 		return ""
@@ -53,12 +108,18 @@ func (m Model) DetailView() string {
 
 	r := m.detailRule
 
-	// Build detail content
 	var lines []string
 	lines = append(lines, "")
 	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Rule #:"), m.styles.Value.Render(fmt.Sprintf("%d", r.Num))))
 	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Action:"), ui.GetPolicyStyle(m.styles, r.Action).Render(r.Action)))
 	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Protocol:"), m.styles.Value.Render(r.ToProtocol)))
+
+	ipVersion := "IPv4"
+	if r.IPv6 {
+		ipVersion = "IPv6"
+	}
+	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("IP Version:"), m.styles.Value.Render(ipVersion)))
+
 	lines = append(lines, "")
 	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Source:"), m.styles.Value.Render(r.FromSource)))
 	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Source Port:"), m.styles.Value.Render(r.FromPort)))
@@ -135,4 +196,131 @@ func (m Model) DeleteConfirmView() string {
 	content := strings.Join(lines, "\n")
 
 	return ui.TitledBox("Confirm Delete", content, m.styles, -1, true)
+}
+
+func (m Model) AddWizardView() string {
+	w := m.addWizard
+	if w == nil {
+		return ""
+	}
+
+	var lines []string
+	lines = append(lines, "")
+
+	if w.Params.Action != "" {
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Action:"), ui.GetPolicyStyle(m.styles, w.Params.Action).Render(w.Params.Action)))
+	}
+	if w.Step > StepDirection && w.Params.Direction != "" {
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Direction:"), m.styles.Value.Render(w.Params.Direction)))
+	} else if w.Step > StepDirection {
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Direction:"), m.styles.Value.Render("both")))
+	}
+	if w.Step > StepProtocol {
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Protocol:"), m.styles.Value.Render(w.Params.Protocol)))
+	}
+	if w.Step > StepPort {
+		port := w.Params.Port
+		if port == "" {
+			port = "any"
+		}
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Port:"), m.styles.Value.Render(port)))
+	}
+	if w.Step > StepSource {
+		src := w.Params.FromAddr
+		if src == "" {
+			src = "any"
+		}
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Source:"), m.styles.Value.Render(src)))
+	}
+	if w.Step > StepDestination {
+		dst := w.Params.ToAddr
+		if dst == "" {
+			dst = "any"
+		}
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Destination:"), m.styles.Value.Render(dst)))
+	}
+	if w.Step > StepInterface {
+		iface := w.Params.Interface
+		if iface == "" {
+			iface = "all"
+		}
+		lines = append(lines, fmt.Sprintf("  %s %s", m.styles.Label.Render("Interface:"), m.styles.Value.Render(iface)))
+	}
+
+	if len(lines) > 1 {
+		lines = append(lines, "")
+	}
+
+	stepTitle := m.getWizardStepTitle(w.Step)
+	lines = append(lines, m.styles.Title.Render(fmt.Sprintf("  %s", stepTitle)))
+	lines = append(lines, "")
+
+	if w.Error != "" {
+		lines = append(lines, m.styles.Error.Render(fmt.Sprintf("  Error: %s", w.Error)))
+		lines = append(lines, "")
+	}
+
+	if w.InputMode {
+		inputBox := fmt.Sprintf("  > %s_", w.Input)
+		lines = append(lines, m.styles.Value.Render(inputBox))
+		lines = append(lines, "")
+		lines = append(lines, m.styles.Label.Foreground(lipgloss.Color("241")).Render("  [Enter] Confirm  [Esc] Cancel"))
+	} else {
+		for i, opt := range w.Options {
+			prefix := "  "
+			style := m.styles.Label
+			if i == w.Cursor {
+				prefix = "> "
+				style = m.styles.Value.Bold(true)
+			}
+			lines = append(lines, style.Render(fmt.Sprintf("  %s%s", prefix, opt)))
+		}
+		lines = append(lines, "")
+
+		hints := "[Enter] Select  [Esc] Cancel"
+		if w.Step > StepAction {
+			hints = "[b] Back  [Esc] Cancel"
+		}
+		if w.Step == StepPort || w.Step == StepSource || w.Step == StepDestination {
+			hints = "[c] Custom  [b] Back  [Esc] Cancel"
+		}
+		lines = append(lines, m.styles.Label.UnsetWidth().Foreground(lipgloss.Color("241")).Render(hints))
+	}
+
+	lines = append(lines, "")
+
+	// Show preview command at confirm step
+	// if w.Step == StepConfirm {
+	// 	args := ufw.BuildAddRuleCommand(w.Params)
+	// 	cmdPreview := "sudo ufw " + strings.Join(args, " ")
+	// 	lines = append(lines, m.styles.Label.Render("  Command:"))
+	// 	lines = append(lines, m.styles.Value.Render(fmt.Sprintf("  %s", cmdPreview)))
+	// 	lines = append(lines, "")
+	// }
+
+	content := strings.Join(lines, "\n")
+	return ui.TitledBox("Add New Rule", content, m.styles, 40, true)
+}
+
+func (m Model) getWizardStepTitle(step WizardStep) string {
+	switch step {
+	case StepAction:
+		return "Select Action"
+	case StepDirection:
+		return "Select Direction"
+	case StepProtocol:
+		return "Select Protocol"
+	case StepPort:
+		return "Select Port"
+	case StepSource:
+		return "Select Source Address"
+	case StepDestination:
+		return "Select Destination Address"
+	case StepInterface:
+		return "Select Interface"
+	case StepConfirm:
+		return "Confirm Rule"
+	default:
+		return "Add Rule"
+	}
 }
