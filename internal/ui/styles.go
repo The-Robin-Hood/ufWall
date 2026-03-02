@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -15,6 +17,8 @@ type Styles struct {
 	SectionBorder       lipgloss.Style
 	SectionTitle        lipgloss.Style
 	SectionBorderActive lipgloss.Style
+
+	ActiveCursorPointer lipgloss.Style
 
 	Menu lipgloss.Style
 
@@ -33,16 +37,16 @@ type Styles struct {
 
 func NewStyles() Styles {
 	var (
-		mauve  = lipgloss.Color("#cba6f7")
-		red    = lipgloss.Color("#f38ba8")
-		maroon = lipgloss.Color("#eba0ac")
-		peach  = lipgloss.Color("#fab387")
-		yellow    = lipgloss.Color("#f9e2af")
-		green = lipgloss.Color("#a6e3a1")
-		sky = lipgloss.Color("#89dceb")
+		mauve    = lipgloss.Color("#cba6f7")
+		red      = lipgloss.Color("#f38ba8")
+		maroon   = lipgloss.Color("#eba0ac")
+		peach    = lipgloss.Color("#fab387")
+		yellow   = lipgloss.Color("#f9e2af")
+		green    = lipgloss.Color("#a6e3a1")
+		sky      = lipgloss.Color("#89dceb")
 		lavender = lipgloss.Color("#b4befe")
 
-		text = lipgloss.Color("#cdd6f4")
+		text     = lipgloss.Color("#cdd6f4")
 		subtext0 = lipgloss.Color("#a6adc8")
 		overlay2 = lipgloss.Color("#9399b2")
 		overlay1 = lipgloss.Color("#7f849c")
@@ -67,6 +71,10 @@ func NewStyles() Styles {
 		InactiveStatus: lipgloss.NewStyle().
 			Bold(true).
 			Foreground(red),
+
+		ActiveCursorPointer: lipgloss.NewStyle().
+			Foreground(yellow).
+			Bold(true),
 
 		StatusLabel: lipgloss.NewStyle().
 			Foreground(text).
@@ -125,5 +133,18 @@ func NewStyles() Styles {
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(maroon).
 			Padding(1, 2),
+	}
+}
+
+func GetPolicyStyle(styles Styles, policy string) lipgloss.Style {
+	switch strings.ToUpper(policy) {
+	case "ALLOW":
+		return styles.AllowPolicy
+	case "DENY":
+		return styles.DenyPolicy
+	case "REJECT":
+		return styles.RejectPolicy
+	default:
+		return styles.Value
 	}
 }

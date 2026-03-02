@@ -15,7 +15,7 @@ func Footer(styles Styles, activeSection int, width int) string {
 		keys = []string{"↑↓: navigate", "space: toggle allow/deny"}
 
 	case sections.RulesSection:
-		keys = []string{"↑↓: navigate", "enter: details", "d: delete"}
+		keys = []string{"↑↓: navigate", "enter: actions", "i: info", "d: delete"}
 	default:
 		keys = []string{"tab: next section", "r: refresh"}
 	}

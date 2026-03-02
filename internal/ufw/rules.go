@@ -100,7 +100,7 @@ func parseRuleLine(num int, line string) Rule {
 func findActionIndex(parts []string) int {
 	for i, part := range parts {
 		upper := strings.ToUpper(strings.Fields(part)[0])
-		if upper == "ALLOW" || upper == "DENY" || upper == "REJECT" || upper == "LIMIT" {
+		if upper == ActionAllow || upper == ActionDeny || upper == ActionReject || upper == ActionLimit {
 			return i
 		}
 	}

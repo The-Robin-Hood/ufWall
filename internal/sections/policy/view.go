@@ -1,31 +1,17 @@
 package policy
 
 import (
-	"strings"
 	"ufWall/internal/ufw"
 	"ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m Model) getPolicyStyle(policy string) lipgloss.Style {
-	switch strings.ToUpper(policy) {
-	case "ALLOW":
-		return m.styles.AllowPolicy
-	case "DENY":
-		return m.styles.DenyPolicy
-	case "REJECT":
-		return m.styles.RejectPolicy
-	default:
-		return m.styles.Value
-	}
-}
-
 func (m Model) View(policy ufw.Policy) string {
 
-	incomingStyle := m.getPolicyStyle(policy.DefaultIncoming)
-	outgoingStyle := m.getPolicyStyle(policy.DefaultOutgoing)
-	routedStyle := m.getPolicyStyle(policy.DefaultRouted)
+	incomingStyle := ui.GetPolicyStyle(m.styles, policy.DefaultIncoming)
+	outgoingStyle := ui.GetPolicyStyle(m.styles, policy.DefaultOutgoing)
+	routedStyle := ui.GetPolicyStyle(m.styles, policy.DefaultRouted)
 
 	incomingLine := lipgloss.JoinHorizontal(
 		lipgloss.Left,
