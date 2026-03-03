@@ -1,62 +1,71 @@
-# ufWall ‑ Your UFW Firewall, but a little prettier
+# ufWall
 
-> *“Because why would you *just* use `sudo ufw status` when you can stare at a very pretty little terminal program that tells you the same thing in a more dramatic way?”*
+> Because `sudo ufw status` is for people who hate themselves.
 
+A terminal UI for UFW that makes firewall management feel less like defusing a bomb blindfolded.
 
-## What the Heck Is This? (Short Answer)
+![Go](https://img.shields.io/badge/Go-1.20+-00ADD8?style=flat&logo=go)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+![Platform](https://img.shields.io/badge/Platform-Linux-FCC624?style=flat&logo=linux)
 
-`ufWall` is a **Tiny, Go‑powered Bubbles** / **Lipgloss** based terminal UI to *manage* the Ubuntu [UFW](https://help.ubuntu.com/community/UFW) firewall.
+## Why?
 
-> The only difference between this and `ufw` is that *you* feel the *warm glow of control*.
+If you genuinely enjoy typing `sudo ufw status numbered` followed by `sudo ufw delete 7` while praying you counted correctly, this isn't for you. Go in peace.
 
-
-## Why You Might Need It
-
-- You hate doing `sudo ufw status` and then `sudo ufw allow 22` *inline*.
-- You like having a visual list of rules that you can scroll through, delete with a single key.
-- You want a little more color and structure before you risk breaking the internet.
-
-If you’re content with the vanilla UFW CLI, this is *unnecessary* – but if you want to add a small flourish to your terminal routine, give it a spin.
-
-## 📦 Prerequisites
-
-- ufw installed
-- Go 1.20+ (for building from source)
-- A terminal that supports ANSI colors (most modern terminals do)
-- Sudo privileges to manage the firewall rules
-
-## 🚀 Quick Start
+## Install
 
 ```bash
 git clone https://github.com/The-Robin-Hood/ufWall.git
 cd ufWall
-go build ./cmd/ufWall
-sudo ./ufWall
+make build
+sudo ./ufwall
 ```
 
-You can also install it with `go install`:
+Or if you trust the internet:
 ```bash
-go install ./cmd/ufWall@latest
-sudo ufWall    
+go install github.com/The-Robin-Hood/ufWall/cmd/ufWall@latest
+sudo ufWall
 ```
 
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 ufWall/
-├─ internal/ufw            # wrappers around `sudo ufw` commands and helpers
-├─ internal/sections       # logic for each UI section (stats, policy, rules)
-├─ internal/ui             # styling & helpers for lipgloss
-├─ internal/app            # Bubbletea model, update loop, view rendering
-├─ cmd/ufWall/main.go      # tiny entry point
-└─ go.mod                  # Go dependencies
+├── cmd/ufWall/         # Entry point
+├── internal/
+│   ├── app/            # Bubble Tea model, view, update loop
+│   ├── sections/       # Stats, Policy, Rules : each with their own problems
+│   ├── ufw/            # UFW command wrappers (the real hero)
+│   ├── ui/             # Styles, menus, boxes — the pretty stuff
+│   └── keys/           # Keybindings
+└── go.mod              # Dependencies (Bubble Tea, Lip Gloss, regret)
 ```
 
-> Nothing fancy: pure Go, a handful of third‑party Bubbles & Lipgloss.
+## Requirements
 
-## 📜 TL;DR
+- Linux with UFW installed (obviously)
+- Go 1.20+ (to build)
+- sudo privileges (we're managing a firewall, not a todo list)
+- A terminal made after 1995
 
-> **`ufWall`** is literally a **fancy wrapper** around `ufw`. It adds colors, tables, and a *little* interactive feel so that you *feel* better while you *break* your own firewall. If you’re on a machine that already has UFW and you’re comfortable with the CLI, you’re probably fine. 
-Otherwise, enjoy the new UI and *don’t forget* to `sudo`.
+## FAQ
+
+**Q: Will this break my firewall?**  
+A: It runs the same `ufw` commands you'd run manually. If you break it, you were going to break it anyway. We just made it prettier.
+
+**Q: Why not just use `ufw`?**  
+A: Why drive a car when you can mass a horse? You do you.
+
+**Q: Does this work on Mac/Windows?**  
+A: UFW is a Linux thing. So no. Get a real OS. (Or use something else, I'm not your dad.)
+
+**Q: I found a bug.**  
+A: That's not a question, but open an issue anyway.
+
+## License
+
+MIT — Do whatever you want. Just don't blame me when you lock yourself out.
+
 ---
+
+*Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) and [Lip Gloss](https://github.com/charmbracelet/lipgloss) because terminals deserve to look good while you panic.*
