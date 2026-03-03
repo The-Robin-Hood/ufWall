@@ -1,8 +1,8 @@
 package policy
 
 import (
-	"ufWall/internal/ufw"
-	"ufWall/internal/ui"
+	"github.com/The-Robin-Hood/ufWall/internal/ufw"
+	"github.com/The-Robin-Hood/ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
 )

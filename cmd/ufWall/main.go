@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 
-	"ufWall/internal/app"
+	"github.com/The-Robin-Hood/ufWall/internal/app"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

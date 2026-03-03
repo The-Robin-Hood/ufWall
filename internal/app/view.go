@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
-	"ufWall/internal/sections/rules"
-	"ufWall/internal/ui"
+	"github.com/The-Robin-Hood/ufWall/internal/sections/rules"
+	"github.com/The-Robin-Hood/ufWall/internal/ui"
 
 	"github.com/charmbracelet/lipgloss"
 )

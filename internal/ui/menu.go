@@ -3,7 +3,7 @@ package ui
 
 import (
 	"strings"
-	"ufWall/internal/keys"
+	"github.com/The-Robin-Hood/ufWall/internal/keys"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"

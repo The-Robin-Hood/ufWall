@@ -1,7 +1,7 @@
 package policy
 
 import (
-	"ufWall/internal/ui"
+	"github.com/The-Robin-Hood/ufWall/internal/ui"
 )
 
 type Model struct {

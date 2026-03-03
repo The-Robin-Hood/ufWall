@@ -2,7 +2,7 @@ package ui
 
 import (
 	"strings"
-	"ufWall/internal/sections"
+	"github.com/The-Robin-Hood/ufWall/internal/sections"
 )
 
 func Footer(styles Styles, activeSection int, width int) string {

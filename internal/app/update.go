@@ -1,10 +1,10 @@
 package app
 
 import (
-	"ufWall/internal/keys"
-	"ufWall/internal/sections"
-	"ufWall/internal/sections/rules"
-	"ufWall/internal/ufw"
+	"github.com/The-Robin-Hood/ufWall/internal/keys"
+	"github.com/The-Robin-Hood/ufWall/internal/sections"
+	"github.com/The-Robin-Hood/ufWall/internal/sections/rules"
+	"github.com/The-Robin-Hood/ufWall/internal/ufw"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"

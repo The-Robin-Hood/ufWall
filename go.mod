@@ -1,4 +1,4 @@
-module ufWall
+module github.com/The-Robin-Hood/ufWall
 
 go 1.25.5
 

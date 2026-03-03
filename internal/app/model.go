@@ -1,11 +1,11 @@
 package app
 
 import (
-	"ufWall/internal/sections/policy"
-	"ufWall/internal/sections/rules"
-	"ufWall/internal/sections/stats"
-	"ufWall/internal/ufw"
-	"ufWall/internal/ui"
+	"github.com/The-Robin-Hood/ufWall/internal/sections/policy"
+	"github.com/The-Robin-Hood/ufWall/internal/sections/rules"
+	"github.com/The-Robin-Hood/ufWall/internal/sections/stats"
+	"github.com/The-Robin-Hood/ufWall/internal/ufw"
+	"github.com/The-Robin-Hood/ufWall/internal/ui"
 )
 
 type model struct {
