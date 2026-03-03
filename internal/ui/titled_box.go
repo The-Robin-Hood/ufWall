@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func TitledBox(title, content string, styles Styles, width int, activeSession bool) string {
+func TitledBox(title, content string, styles Styles, width int, activeSession bool, height ...int) string {
 
 	style := styles.SectionBorder
 	if activeSession {
@@ -25,6 +25,9 @@ func TitledBox(title, content string, styles Styles, width int, activeSession bo
 
 	if boxWidth > 0 {
 		style = style.Width(boxWidth)
+	}
+	if len(height) > 0 {
+		style = style.Height(height[0])
 	}
 
 	box := style.Render(content)

@@ -18,29 +18,30 @@ type RulesData struct {
 func (m Model) View(data RulesData) string {
 	sectionActiveNoMenu := m.menu == nil && m.active && !m.showDetails && !m.showDeleteConfirm
 
-	ipTable := m.renderTable(data.IPv4, data.IPv6, m.ipv4CursorLine, sectionActiveNoMenu && m.activeTable == IPv4Table)
-	if m.activeTable == IPv6Table {
-		ipTable = m.renderTable(data.IPv4, data.IPv6, m.ipv6CursorLine, sectionActiveNoMenu && m.activeTable == IPv6Table)
-	}
+	ipTable := m.renderTable(data.IPv4, data.IPv6, sectionActiveNoMenu)
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		ipTable,
 	)
 
-	return ui.TitledBox("Active Rules", content, m.styles, -1, m.active)
+	return ui.TitledBox("Active Rules", content, m.styles, -1, m.active, 13)
 }
 
-func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, cursorLine int, isActive bool) string {
+func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, isActive bool) string {
 	var rows []string
 
 	titleStyle := m.styles.Label
 	if isActive {
 		titleStyle = titleStyle.Bold(true).Foreground(lipgloss.Color("12"))
 	}
+
 	activeTitle := "IPv4 Rules"
 	inActiveTitle := "IPv6 Rules"
 
 	rules := ipV4Rules
+	scrollOffset := m.ipv4ScrollOffset
+	cursorLine := m.ipv4CursorLine
 
 	maxIPv4 := len(fmt.Sprintf("%s (%d)", "IPv4 Rules", 9999))
 	maxIPv6 := len(fmt.Sprintf("%s (%d)", "IPv6 Rules", 9999))
@@ -53,9 +54,18 @@ func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, cursorLin
 		m.styles.Label.Foreground(lipgloss.Color("241")).Render(padTitle(inActiveTitle, len(ipV6Rules), maxIPv6))
 
 	if m.activeTable == IPv6Table {
+		scrollOffset = m.ipv6ScrollOffset
+		cursorLine = m.ipv6CursorLine
 		rules = ipV6Rules
 		tabTitle = m.styles.Label.Foreground(lipgloss.Color("241")).Render(padTitle(activeTitle, len(ipV4Rules), maxIPv4)) + "|  " +
 			titleStyle.Render(padTitle(inActiveTitle, len(ipV6Rules), maxIPv6))
+	}
+
+	if len(rules) > MaxVisibleRules {
+		scrollInfo := m.renderScrollIndicator(len(rules), scrollOffset)
+		lineWidth := lipgloss.Width(tabTitle)
+		scrollInfoRight := lipgloss.PlaceHorizontal(lineWidth, lipgloss.Right, scrollInfo)
+		tabTitle = lipgloss.JoinHorizontal(lipgloss.Left, tabTitle, scrollInfoRight)
 	}
 
 	rows = append(rows, tabTitle)
@@ -75,7 +85,11 @@ func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, cursorLin
 	line := strings.Repeat("─", lipgloss.Width(headerContent))
 	rows = append(rows, "  "+headerContent, "  "+m.styles.Label.UnsetWidth().Render(line))
 
-	for i, r := range rules {
+	startIdx := scrollOffset
+	endIdx := min(scrollOffset+MaxVisibleRules, len(rules))
+
+	for i := startIdx; i < endIdx; i++ {
+		r := rules[i]
 		action := fmt.Sprintf("%-6s", r.Action)
 		row := fmt.Sprintf(
 			"%-3d │ %6s │ %-5s │ %-16s │ %-5s │ %-16s │ %-5s",
@@ -89,8 +103,14 @@ func (m Model) renderTable(ipV4Rules []ufw.Rule, ipV6Rules []ufw.Rule, cursorLin
 		)
 		rows = append(rows, ui.InsertCursorRulesSection(row, cursorLine == i && isActive, m.styles, r.Action))
 	}
-
 	return strings.Join(rows, "\n")
+}
+
+func (m Model) renderScrollIndicator(totalRules int, scrollOffset int) string {
+	current := scrollOffset + 1
+	end := min(scrollOffset+MaxVisibleRules, totalRules)
+	return m.styles.Label.Foreground(lipgloss.Color("241")).Render(
+		fmt.Sprintf("  Showing %d-%d of %d", current, end, totalRules))
 }
 
 func truncate(s string, maxLen int) string {
@@ -172,15 +192,15 @@ func (m Model) DeleteConfirmView() string {
 	lines = append(lines, "")
 	lines = append(lines, m.styles.Error.Render("  Are you sure you want to delete this rule?"))
 	lines = append(lines, "")
-	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("Rule #:"), m.styles.Value.Render(fmt.Sprintf("%d", r.Num))))
-	lines = append(lines, fmt.Sprintf("  %s  %s %s", m.styles.Label.Render("Action:"), ui.GetPolicyStyle(m.styles, r.Action).Render(r.Action), m.styles.Value.Render(r.ToPort)))
-	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("From:"), m.styles.Value.Render(r.FromSource)))
-	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Render("To:"), m.styles.Value.Render(r.ToDest)))
+	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Width(10).Render("Rule   :"), m.styles.Value.Render(fmt.Sprintf("%d", r.Num))))
+	lines = append(lines, fmt.Sprintf("  %s  %s %s", m.styles.Label.Width(10).Render("Action :"), ui.GetPolicyStyle(m.styles, r.Action).Render(r.Action), m.styles.Value.Render(r.ToPort)))
+	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Width(10).Render("From   :"), m.styles.Value.Render(r.FromSource)))
+	lines = append(lines, fmt.Sprintf("  %s  %s", m.styles.Label.Width(10).Render("To     :"), m.styles.Value.Render(r.ToDest)))
 	lines = append(lines, "")
 	text := m.styles.Label.
 		PaddingTop(1).
 		UnsetWidth().
-		Render("[y] Yes, delete  [n/Esc] Cancel")
+		Render("[Enter] Confirm  [Esc] Cancel")
 
 	centered := lipgloss.Place(
 		50,

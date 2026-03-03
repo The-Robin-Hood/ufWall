@@ -27,8 +27,8 @@ func (m Model) Update(msg tea.Msg, data RulesData) (Model, tea.Cmd) {
 	if m.showDeleteConfirm {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			switch msg.String() {
-			case "y", "Y":
+			switch {
+			case key.Matches(msg, keys.Bindings.Execute):
 				if m.deleteRule != nil {
 					log.Printf("Deleting rule #%d (confirmed)", m.deleteRule.Num)
 					ufw.DeleteRule(m.deleteRule.Num)
@@ -36,7 +36,7 @@ func (m Model) Update(msg tea.Msg, data RulesData) (Model, tea.Cmd) {
 				m.showDeleteConfirm = false
 				m.deleteRule = nil
 				return m, keys.Refresh()
-			case "n", "N", "esc":
+			case key.Matches(msg, keys.Bindings.Quit):
 				m.showDeleteConfirm = false
 				m.deleteRule = nil
 				return m, nil
@@ -379,10 +379,18 @@ func (m *Model) moveCursorUp() {
 	if m.activeTable == IPv6Table {
 		if m.ipv6CursorLine > 0 {
 			m.ipv6CursorLine--
+			// Scroll up if cursor goes above visible area
+			if m.ipv6CursorLine < m.ipv6ScrollOffset {
+				m.ipv6ScrollOffset = m.ipv6CursorLine
+			}
 		}
 	} else {
 		if m.ipv4CursorLine > 0 {
 			m.ipv4CursorLine--
+			// Scroll up if cursor goes above visible area
+			if m.ipv4CursorLine < m.ipv4ScrollOffset {
+				m.ipv4ScrollOffset = m.ipv4CursorLine
+			}
 		}
 	}
 }
@@ -391,10 +399,18 @@ func (m *Model) moveCursorDown(rules []ufw.Rule) {
 	if m.activeTable == IPv6Table {
 		if m.ipv6CursorLine < len(rules)-1 {
 			m.ipv6CursorLine++
+			// Scroll down if cursor goes below visible area
+			if m.ipv6CursorLine >= m.ipv6ScrollOffset+MaxVisibleRules {
+				m.ipv6ScrollOffset = m.ipv6CursorLine - MaxVisibleRules + 1
+			}
 		}
 	} else {
 		if m.ipv4CursorLine < len(rules)-1 {
 			m.ipv4CursorLine++
+			// Scroll down if cursor goes below visible area
+			if m.ipv4CursorLine >= m.ipv4ScrollOffset+MaxVisibleRules {
+				m.ipv4ScrollOffset = m.ipv4CursorLine - MaxVisibleRules + 1
+			}
 		}
 	}
 }

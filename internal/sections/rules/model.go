@@ -51,8 +51,12 @@ type Model struct {
 
 	// Two-table navigation
 	activeTable    Table // Which table (IPv4 or IPv6) is currently focused
-	ipv4CursorLine int   
-	ipv6CursorLine int  
+	ipv4CursorLine int
+	ipv6CursorLine int
+
+	// Scroll offsets for each table
+	ipv4ScrollOffset int
+	ipv6ScrollOffset int
 
 	// Detail view overlay
 	showDetails bool
@@ -64,8 +68,10 @@ type Model struct {
 
 	// Multi-step menu operations
 	menuContext *MenuContext
-	addWizard *AddWizard
+	addWizard   *AddWizard
 }
+
+const MaxVisibleRules = 7
 
 func New(styles ui.Styles) Model {
 	return Model{
@@ -76,6 +82,8 @@ func New(styles ui.Styles) Model {
 		activeTable:       IPv4Table,
 		ipv4CursorLine:    0,
 		ipv6CursorLine:    0,
+		ipv4ScrollOffset:  0,
+		ipv6ScrollOffset:  0,
 		showDetails:       false,
 		detailRule:        nil,
 		showDeleteConfirm: false,
@@ -139,6 +147,13 @@ func (m Model) CurrentCursorLine() int {
 		return m.ipv6CursorLine
 	}
 	return m.ipv4CursorLine
+}
+
+func (m Model) CurrentScrollOffset() int {
+	if m.activeTable == IPv6Table {
+		return m.ipv6ScrollOffset
+	}
+	return m.ipv4ScrollOffset
 }
 
 func (m Model) ShowingAddWizard() bool {
