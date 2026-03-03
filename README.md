@@ -12,8 +12,8 @@ A terminal UI for UFW that makes firewall management feel less like defusing a b
 
 If you genuinely enjoy typing `sudo ufw status numbered` followed by `sudo ufw delete 7` while praying you counted correctly, this isn't for you. Go in peace.
 
-## Looks like this:
-![ufWall Screenshot](/assets/screenshot.png)
+## How it looks
+![ufWall Demo](/assets/demo.gif)
 
 ## Install
 
