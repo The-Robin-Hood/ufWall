@@ -17,11 +17,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	f, err := tea.LogToFile("debug.log", "debug")
-	if err != nil {
-		panic(err)
+	if os.Getenv("DEBUG") == "1" {
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 
 	p := tea.NewProgram(app.InitialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
