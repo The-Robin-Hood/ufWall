@@ -16,18 +16,23 @@ If you genuinely enjoy typing `sudo ufw status numbered` followed by `sudo ufw d
 ![ufWall Demo](/assets/demo.gif)
 
 ## Install
+Go Users:
+```bash
+go install github.com/The-Robin-Hood/ufWall/cmd/ufWall@latest
+sudo ufWall
+```
 
+Arch Users: 
+```bash
+yay -S ufWall
+```
+
+## Compile it yourself
 ```bash
 git clone https://github.com/The-Robin-Hood/ufWall.git
 cd ufWall
 make build
 sudo ./ufwall
-```
-
-Or if you trust the internet:
-```bash
-go install github.com/The-Robin-Hood/ufWall/cmd/ufWall@latest
-sudo ufWall
 ```
 
 ## Project Structure
